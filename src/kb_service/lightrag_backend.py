@@ -7,6 +7,7 @@ This module provides an implementation of the BaseKnowledgeGraph interface using
 import requests
 import aiohttp
 from typing import Optional, Literal
+import lightrag.utils
 
 from src.core.config import (
     LIGHT_RAG_SERVER_URL,
@@ -22,6 +23,27 @@ from src.core.models import (
     InsertResponse,
 )
 from src.kb_service.base_knowledge_graph import BaseKnowledgeGraph
+
+
+def my_process_combine_contexts(hl_context, ll_context):
+    if isinstance(hl_context, str):
+        hl_context = []
+    if isinstance(ll_context, str):
+        ll_context = []
+    seen_content = {}
+    combined_data = []
+    for item in hl_context + ll_context:
+        content_dict = {k: v for k, v in item.items() if k != "id"}
+        content_key = tuple(sorted(content_dict.items()))
+        if content_key not in seen_content:
+            seen_content[content_key] = item
+            combined_data.append(item)
+    for i, item in enumerate(combined_data):
+        item["id"] = str(i)
+    return combined_data
+
+
+lightrag.utils.process_combine_contexts = my_process_combine_contexts
 
 
 class LightRAGKnowledgeGraph(BaseKnowledgeGraph):
