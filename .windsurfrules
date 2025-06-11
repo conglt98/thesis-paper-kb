@@ -1,0 +1,61 @@
+Project Setup:
+- Use Python 3.12+.
+- Manage dependencies and run commands with `uv` (e.g., `uv sync`, `uv run pytest`).
+- Use `pre-commit` for code quality; ensure `uv run pre-commit install` is run once.
+
+Architecture:
+- Follow a Component-Based Architecture (MAS/SOA principles).
+- Agent components are in vertical slices: `src/agents/<agent_name>/`.
+- Shared agent tools are in `src/agents/common_tools.py`.
+- Core utilities (config, models, logger) are in `src/core/`.
+- Knowledge Base logic is in `src/kb_service/`.
+- MCP server logic is in `src/mcp_service/`.
+- Use Pydantic models from `src/core/models.py` for all data contracts.
+
+Coding Standards:
+- Prioritize simple and elegant solutions.
+- Adhere strictly to PEP 8 naming conventions.
+- Use descriptive names for all variables, functions, and classes.
+- Design functions and classes with a single responsibility.
+- Minimize function parameters; prefer primitive types for tool arguments.
+
+Type Hints and Docstrings:
+- Use type hints for all function signatures.
+- Write clear docstrings for all modules, classes, and functions.
+- ADK tool docstrings are critical and MUST specify: purpose, usage conditions, arguments (name, type, description), and return format.
+
+Error Handling:
+- Implement robust error handling for all I/O and API calls.
+- Use specific exception types.
+- For ADK agents, signal unrecoverable errors using `EventActions(escalate=True)` with a clear message.
+- Tool responses must include a status key (e.g., `{"status": "success", ...}`).
+
+Testing Standards:
+- Use `pytest` as the testing framework.
+- Test files must mirror the `src/` directory structure under `tests/`.
+- Write tests for all new code, covering success paths, edge cases, and errors.
+- Use `unittest.mock` to isolate components and mock external dependencies (APIs, files).
+- Use the in-memory `fastmcp.Client` for testing FastMCP server components.
+- Test ADK agents by testing tools individually and simulating event sequences.
+
+Documentation:
+- Maintain `docs/codebase_context.md` as a high-level project overview.
+- Update `docs/codebase_context.md` when adding modules or changing architecture.
+- Create or update feature documentation in `docs/features/` using the template.
+- Ensure `README.md` contains setup and run instructions.
+
+Security:
+- Load all sensitive keys from environment variables, managed via `src/core/config.py`.
+- Implement authentication for any externally exposed APIs.
+
+Tool Specific Guidelines:
+- ADK:
+  - Use `session.state` via `tool_context.state` for managing conversational context.
+  - Use `output_key` on an agent to save its final response to `session.state`.
+  - Use `SequentialAgent`, `ParallelAgent`, or `LoopAgent` for workflow orchestration.
+  - For MCP integration, use `MCPToolset.from_server()` and manage the returned `exit_stack`.
+- FastMCP:
+  - Expose tools from `src/mcp_service/server.py` using the `@mcp.tool()` decorator.
+  - Use type hints and docstrings on decorated functions to generate the MCP schema.
+- Loguru:
+  - Use the central logger for all logging: `from src.core.logger import logger`.

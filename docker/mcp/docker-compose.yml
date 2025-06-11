@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  fastmcp-server:
+    build:
+      context: ../../
+      dockerfile: docker/mcp/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      # Agent interaction configuration - use host.docker.internal to reach host machine
+      - URL_AGENT=${URL_AGENT:-http://host.docker.internal:8000}
+      - USER_ID=${USER_ID:-u_123}
+      - SESSION_ID=${SESSION_ID:-s_123}
+      - AGENT_APPS=${AGENT_APPS:-technical_agent}
+    volumes:
+      # Mount source code for development (optional)
+      - ../../src:/app/src:ro
+    command: ["uv", "run", "fastmcp", "run", "src/mcp/greetings.py:mcp"]
+
+  # Alternative service for different transport modes
+  fastmcp-server-http:
+    build:
+      context: ../../
+      dockerfile: docker/mcp/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      # Agent interaction configuration - use host.docker.internal to reach host machine
+      - URL_AGENT=${URL_AGENT:-http://host.docker.internal:8000}
+      - USER_ID=${USER_ID:-u_123}
+      - SESSION_ID=${SESSION_ID:-s_123}
+      - AGENT_APPS=${AGENT_APPS:-technical_agent}
+    volumes:
+      - ../../src:/app/src:ro
+    command: ["uv", "run", "fastmcp", "run", "src/mcp/greetings.py:mcp", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8001"]
+
+  # Alternative for Linux systems using host network
+  fastmcp-server-host-network:
+    build:
+      context: ../../
+      dockerfile: docker/mcp/Dockerfile
+    network_mode: host
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      # Agent interaction configuration - can use localhost when using host network
+      - URL_AGENT=${URL_AGENT:-http://localhost:8000}
+      - USER_ID=${USER_ID:-u_123}
+      - SESSION_ID=${SESSION_ID:-s_123}
+      - AGENT_APPS=${AGENT_APPS:-technical_agent}
+    volumes:
+      - ../../src:/app/src:ro
+    command: ["uv", "run", "fastmcp", "run", "src/mcp/greetings.py:mcp"]

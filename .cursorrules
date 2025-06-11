@@ -1,0 +1,430 @@
+# AI Agent Configuration Rules
+
+This document outlines the operational guidelines for the AI coding agent working on the AI-Powered Knowledge Base System.
+
+# Workflow
+*   FOLLOW THIS PIPELINE FOR EVERY TASK: **READ -> PLAN -> WRITE -> TEST -> DEBUG -> DOCUMENT**
+
+## READ Phase: Gather Context Autonomously
+*   **Analyze Prompt:** Thoroughly dissect the user's request to identify the core objective, explicit requirements, and constraints.
+*   **Consult Internal Knowledge:**
+    *   Review `docs/codebase_context.md` for project overview, architecture, module summaries, and file goals.
+    *   Examine relevant project documents:
+        *   `system-design.md` (SSDD) for overall architecture, component design, and data models.
+        *   `technical_requirement.md` (TRD) for functional and non-functional requirements.
+        *   `code_base_structure.md` for detailed codebase layout and architectural rationale.
+        *   `adk-knowledge.md` for ADK specific patterns and usage.
+        *   `fast-mcp.md` for FastMCP library usage and MCP concepts.
+        *   `light-rag-server.md` and `light-rag-server-api.json` for LightRAG server and API details.
+        *   `mermaid_list_features.md` for understanding the feature hierarchy managed by the Business Agent.
+        *   `features_template.md` as a reference for feature documentation structure.
+*   **Analyze Existing Code:** Identify and read relevant sections of the current codebase (`src/`, `tests/`) to understand existing logic, patterns, dependencies, and integration points. Pay attention to how components like ADK agents, KB service, and MCP service interact.
+*   **Seek External Knowledge (If Necessary & Permitted):**
+    *   Consult official documentation for specified libraries: Google Agent Development Kit (ADK), `lightrag`, `fast-mcp`, `litellm`, `loguru`, `uv`, `pytest`.
+    *   Search trusted technical resources for standard practices or error resolution related to the task technologies. Prioritize official sources.
+*   **Synthesize:** Combine all gathered information to form a comprehensive understanding of the task, its context, and potential challenges.
+
+## PLAN Phase
+*   Outline implementation steps as a detailed checklist.
+*   Detail file changes, new functions/classes, logic modifications, and API interactions.
+*   **Articulate Understanding (Mental Model): Clearly state your understanding of the task requirements and the reasoning behind your proposed solution steps. Explain how your plan addresses the requirements and fits into the existing architecture.**
+*   Specify the testing approach, including new unit tests to be written or existing ones to be updated.
+*   Outline documentation needs, including updates to `docs/codebase_context.md`, READMEs, or feature documentation.
+*   **Seek approval for the plan before proceeding if the task involves significant architectural changes or ambiguity.**
+*   Save the approved plan (if applicable).
+
+## WRITE Phase
+*   Implement code changes according to the approved plan.
+*   Strictly adhere to guidelines in the `# Coding Standards`, `# Project Rules`, and relevant `# External Package Guidance` sections.
+*   Focus on creating simple and elegant solutions.
+*   Perform self-review based on project standards and the plan.
+
+## TEST Phase
+*   Write or update unit tests following guidelines in the `# Unit Testing` section.
+*   Ensure tests cover new functionality, edge cases, and requirements specified in the plan.
+*   Run all relevant tests (`pytest`) and verify they pass. Ensure code coverage is maintained or improved.
+*   If using FastMCP, leverage its client for in-memory testing of MCP server components.
+
+## DEBUG Phase
+*   **Identify Issues:** If tests fail or runtime errors occur, systematically identify the root cause.
+*   **Analyze Errors:** Examine error messages, `loguru` logs, and test failure details.
+*   **Formulate Hypothesis:** Develop a hypothesis about the cause of the error based on the analysis.
+*   **Test Hypothesis:** Make targeted code changes or use debugging tools (e.g., ADK Dev UI/CLI for agent issues) to test the hypothesis. Add temporary logging if needed.
+*   **Verify Fix:** Rerun tests to confirm the issue is resolved and no regressions were introduced.
+*   **Consult Debugging Rules:** Refer to the `# Debugging Rules` section for specific project strategies or tools.
+*   **Iterate:** Repeat the debug cycle until all identified issues related to the task are resolved.
+
+## DOCUMENT Phase
+*   Update or create documentation as outlined in the plan, following the `# Documentation` section.
+    *   Update module-level or component READMEs if significant changes were made.
+    *   Add or update code comments, especially docstrings for ADK tools and public APIs.
+    *   If the task involved creating or significantly modifying a feature, ensure feature documentation is updated or created, potentially using `docs/features_template.md` as a guide.
+*   Update `docs/codebase_context.md` if significant structural changes, new modules, or key functionalities were added or modified, following the `# Codebase Knowledge Generation` section.
+
+# Project Rules
+*   **Primary Language:** Python 3.10+.
+*   **Package Management:** Use `uv` for managing Python dependencies (`uv pip install`, `uv sync`).
+*   **Architecture:**
+    *   Adhere to the Component-Based Architecture, implementing Multi-Agent System (MAS) and Service-Oriented Architecture (SOA) principles.
+    *   Organize agent components into vertical slices: `src/agents/<agent_name>/` containing `agent.py` and `tools.py`.
+    *   Shared agent utilities are located in `src/agents/common_tools.py`.
+    *   Knowledge management logic is encapsulated in `src/kb_service/`.
+    *   MCP interface logic is in `src/mcp_service/`.
+    *   Core utilities (models, config, logging) are in `src/core/`.
+*   **Configuration Management:**
+    *   Application configurations are managed via environment variables and the `src/core/config.py` module.
+    *   Sensitive keys (e.g., API keys) MUST be loaded from environment variables.
+*   **Logging:**
+    *   Use `loguru` for all application logging.
+    *   Configure `loguru` centrally in `src/core/logger.py`.
+    *   Default log level is INFO, configurable via environment variables.
+*   **Security:**
+    *   For the KB Service API, if exposed beyond the agent application, implement authentication/authorization (e.g., API keys, JWT).
+    *   For the MCP Service, configure `fast-mcp` authentication providers for production.
+    *   Handle user identification in the conversational UI as the first step.
+*   **Data Model:**
+    *   Utilize Pydantic models (in `src/core/models.py`) for data entities and API contracts between components.
+
+
+# Coding Standards
+*   **Core Principle:** Prioritize simple and elegant solutions.
+*   **Formatting & Linting:**
+    *   Use `pre-commit` for automated code formatting, linting, and type-checking.
+    *   Ensure `pre-commit run --all-files` passes before committing code.
+*   **Naming Conventions:**
+    *   Follow PEP 8 for Python code.
+    *   Use descriptive names for variables, functions, classes, and modules.
+*   **Type Hints:**
+    *   Use Python type hints for all function signatures and variable declarations where appropriate.
+*   **Docstrings & Comments:**
+    *   Write clear and concise docstrings for all modules, classes, functions, and methods, especially for ADK Tools. Docstrings are critical for LLM understanding of tool usage.
+    *   Docstrings for ADK tools should clearly explain:
+        *   What the tool does.
+        *   When to use it.
+        *   What arguments it requires (name, type, description).
+        *   What information it returns (format, key fields).
+    *   Use inline comments to explain complex logic or non-obvious decisions.
+*   **Error Handling:**
+    *   Implement robust error handling for API calls, file operations, and other I/O-bound tasks.
+    *   Use specific exception types where possible.
+    *   For ADK agents, use `EventActions(escalate=True)` with an error message to signal unrecoverable errors or conditions that should stop the current flow.
+    *   Tool responses should clearly indicate status (e.g., `{"status": "success", ...}` or `{"status": "error", "error_message": "..."}`).
+*   **Modularity:**
+    *   Design functions and classes with a single responsibility.
+    *   Keep components loosely coupled.
+*   **Simplicity:** Minimize the number of parameters for functions/tools. Favor primitive data types (str, int) over custom classes for tool arguments where possible.
+
+# Unit Testing
+*   **Framework:** Use `pytest` for all unit tests.
+*   **Test Location:** Test files should mirror the structure of the `src/` directory within `tests/`. For example, tests for `src/agents/business_agent/agent.py` should be in `tests/agents/business_agent/test_agent.py`.
+*   **Coverage:**
+    *   Aim for high test coverage.
+    *   Run coverage reports using `uv run pytest --cov=src --cov=examples --cov-report=html`.
+*   **Test Cases:**
+    *   Write tests for all new functionalities and bug fixes.
+    *   Include tests for successful paths, edge cases, and error conditions.
+*   **Assertions:** Use clear and specific assertions.
+*   **Mocking:**
+    *   Use mocking libraries (e.g., `unittest.mock`) to isolate units under test and to mock external dependencies like API calls or file system operations.
+    *   ADK examples often use mock data for tool responses in tests.
+*   **FastMCP Client for Testing:** Utilize the `fastmcp.Client` with `FastMCPTransport` for in-memory testing of FastMCP server components, eliminating network calls during tests.
+*   **ADK Agent Testing:**
+    *   Test individual tools separately.
+    *   Test agent logic by simulating user inputs and verifying event sequences or final responses.
+    *   Test agent delegation and workflow agent orchestration.
+*   **Pull Requests:** All Pull Requests (PRs) must include new or updated tests relevant to the changes and ensure all tests pass.
+
+# Codebase Knowledge Generation
+*   **Purpose:** Maintain `docs/codebase_context.md` as a central, high-level overview of the project for AI agents and human developers.
+*   **Content to Include:**
+    *   **Project Overview:** Brief description of the AI-Powered Knowledge Base System, its objectives, and key technologies.
+    *   **Architecture Summary:** High-level description of the Component-Based Architecture (MAS/SOA), vertical slices for agents, and core service components (KB Service, MCP Service). Reference `system-design.md` and `code_base_structure.md` for details.
+    *   **Key Module Summaries & File Goals:**
+        *   `src/agents/`: Contains ADK agent implementations.
+            *   `src/agents/<agent_name>/agent.py`: Core logic for the specific agent.
+            *   `src/agents/<agent_name>/tools.py`: ADK `FunctionTool`s specific to that agent.
+            *   `src/agents/common_tools.py`: ADK `FunctionTool`s shared across multiple agents.
+        *   `src/core/`: Shared utilities.
+            *   `src/core/config.py`: Application configuration management.
+            *   `src/core/logger.py`: `loguru` logging setup.
+            *   `src/core/models.py`: Pydantic models for data structures and API contracts.
+        *   `src/kb_service/`: Knowledge Base service logic.
+            *   `src/kb_service/api.py`: Defines the internal API/interface for KB operations (query_knowledge, save_knowledge).
+            *   `src/kb_service/graph_module.py`: Logic for `lightrag` knowledge graph interaction via its HTTP API.
+            *   `src/kb_service/markdown_module.py`: Logic for Markdown file storage and retrieval.
+        *   `src/mcp_service/`: MCP Exposure service logic.
+            *   `src/mcp_service/server.py`: `fast-mcp` server implementation.
+        *   `src/main_cli.py`: Main entry point for the CLI conversational interface.
+        *   `tests/`: Unit tests, mirroring `src/` structure.
+        *   `docs/`: Project documentation.
+            *   `docs/architecture.md`: Detailed architecture (from `code_base_structure.md`).
+            *   `docs/usage.md`: User guide for the system.
+            *   `docs/features_template.md`: Template for documenting individual features.
+            *   `docs/mermaid_list_features.md`: Source for feature hierarchy.
+    *   **Data Flow:** Briefly describe how data flows between agents and services for key operations (e.g., user query -> Host Agent -> Business/Technical Agent -> KB Service).
+*   **Update Frequency:** Update `docs/codebase_context.md` when:
+    *   New modules or core components are added.
+    *   Significant architectural changes are made.
+    *   The primary responsibility or interaction pattern of a key module changes.
+
+# Documentation
+*   **README.md (Root):**
+    *   Provide a project overview, setup instructions (including `uv sync`), and how to run the application (e.g., `python src/main_cli.py`, `adk web`).
+*   **Feature Documentation:**
+    *   When implementing or significantly modifying a feature, create or update its documentation.
+    *   Use `docs/features_template.md` as a guide for structure and content.
+    *   Store feature documentation in a logical place, e.g., `docs/features/<feature_name>.md`.
+*   **Architecture Documentation:**
+    *   Maintain `docs/architecture.md` (derived from `code_base_structure.md` and `system-design.md`) to reflect the current system architecture.
+*   **Usage Documentation:**
+    *   Maintain `docs/usage.md` to guide users on how to interact with the system (especially the CLI).
+*   **Code Comments:**
+    *   Provide clear docstrings for all public modules, classes, and functions, especially ADK tools (see `# Coding Standards`).
+    *   Use inline comments for complex or non-obvious logic.
+*   **API Documentation:**
+    *   For services like KB Service or MCP Service, ensure their APIs are documented. `fast-mcp` can generate OpenAPI specs. `lightrag` provides Swagger UI.
+*   **`docs/codebase_context.md`:** See `# Codebase Knowledge Generation`.
+
+# Debugging Rules
+*   **ADK Agent Debugging:**
+    *   Utilize the ADK Developer UI (`adk web`) or CLI (`adk run`) for inspecting agent execution steps, events, and state changes.
+    *   Examine the sequence of `Event` objects yielded by the `Runner` to trace agent behavior, tool calls, and LLM interactions.
+*   **Logging:**
+    *   Leverage `loguru` logs extensively. Ensure log messages are informative and provide context.
+    *   Adjust log levels dynamically (via config or code) for more detailed output during debugging.
+*   **Systematic Approach:**
+    *   Clearly identify the problem and expected behavior.
+    *   Formulate hypotheses about the cause.
+    *   Isolate the problematic component (specific agent, tool, service).
+    *   Use print statements or debugger breakpoints judiciously.
+*   **Tool Testing:** Test ADK tools independently with mock `ToolContext` if necessary.
+*   **API Interaction Debugging:**
+    *   When debugging interactions with LightRAG API or other external APIs, log request payloads and responses.
+    *   Use tools like `curl` or Postman to test API endpoints directly if issues are suspected at the API level.
+
+# Specific Process Rules
+
+## Code Review
+*   **Pre-commit Hooks:** All code must pass `pre-commit` checks before being committed. Install hooks locally using `uv run pre-commit install`.
+*   **Pull Requests (PRs):**
+    *   Create feature branches from `main`.
+    *   Submit PRs against the `main` branch.
+    *   Ensure PRs include:
+        *   Clear description of changes.
+        *   Relevant unit tests (passing).
+        *   Updated documentation if applicable.
+    *   PRs must pass all automated checks (CI pipeline, including tests and linters).
+*   **Self-Review:** Before submitting a PR, perform a self-review to check for adherence to coding standards, clarity, and completeness.
+
+# External Package Guidance
+
+## ADK (Agent Development Kit)
+*   **Core Concepts:**
+    *   `Agent`: Fundamental worker unit (`LlmAgent`, `SequentialAgent`, `ParallelAgent`, `LoopAgent`).
+    *   `Tool`: Gives agents abilities (e.g., `FunctionTool`, `LongRunningFunctionTool`, `AgentTool`). Docstrings are critical for LLM understanding.
+    *   `Callbacks`: Custom code at specific points (`before_model_callback`, `before_tool_callback`).
+    *   `Session` & `State`: Manage conversation context and agent's working memory (`InMemorySessionService` for PoC, `session.state`).
+    *   `ToolContext`: Passed to tools, provides access to `tool_context.state`.
+    *   `Runner`: Orchestrates agent execution and event flow.
+    *   `Event`: Basic unit of communication (user message, agent reply, tool use). `event.is_final_response()` is key.
+*   **Agent Definition:**
+    *   `name`: Unique identifier.
+    *   `model`: LLM to use (string for Gemini, or `LiteLlm` object for others).
+    *   `description`: Concise summary, crucial for delegation in multi-agent systems.
+    *   `instruction`: Detailed guidance for LLM behavior, persona, goals, tool usage.
+    *   `tools`: List of tool functions or `BaseTool` instances.
+    *   `sub_agents`: List of child agent instances for hierarchy and delegation.
+    *   `output_key`: If set, agent's final response text is saved to `session.state[output_key]`.
+*   **Tool Implementation:**
+    *   Use standard Python functions.
+    *   Docstrings MUST clearly define purpose, args (name, type), and return format for LLM to use correctly.
+    *   Return type preferably a dictionary. If not, ADK wraps it as `{"result": ...}`. Include a "status" key.
+    *   Access session state via `tool_context: ToolContext` (last argument).
+    *   `LongRunningFunctionTool`: For tasks that don't block the agent. Agent client manages progress updates.
+    *   `AgentTool`: Wrap another agent to use it as a tool.
+*   **Multi-Agent Systems (MAS):**
+    *   **Hierarchy:** Define `sub_agents` in a parent agent.
+    *   **Workflow Agents:**
+        *   `SequentialAgent`: Executes sub-agents in order. Shares `InvocationContext`.
+        *   `ParallelAgent`: Executes sub-agents concurrently. Modifies `InvocationContext.branch`. Shared `session.state`.
+        *   `LoopAgent`: Executes sub-agents sequentially in a loop. Stops on `max_iterations` or `actions.escalate=True`.
+    *   **Communication & Interaction:**
+        *   Shared Session State: `session.state`, `output_key`.
+        *   LLM-Driven Delegation: Agent's LLM generates `transfer_to_agent(agent_name='target')`. Requires clear sub-agent `description` and parent `instruction`.
+        *   Explicit Invocation: Use `AgentTool`.
+*   **State Management:**
+    *   `session.state`: Dictionary tied to user session.
+    *   Tools access via `tool_context.state`.
+    *   Agent can save its response via `output_key`.
+*   **Callbacks:**
+    *   `before_model_callback(callback_context: CallbackContext, llm_request: LlmRequest) -> Optional[LlmResponse]`: Inspect/modify/block LLM request. Return `LlmResponse` to block.
+    *   `before_tool_callback(tool: BaseTool, args: Dict[str, Any], tool_context: ToolContext) -> Optional[Dict]`: Inspect/modify tool args, or block tool execution by returning a result dictionary.
+*   **MCP Integration (ADK as Client):**
+    *   Use `MCPToolset.from_server()` to connect to an MCP server.
+    *   `StdioServerParameters`: For local MCP servers (e.g., `npx @modelcontextprotocol/server-filesystem`).
+        *   `command`: e.g., 'npx'.
+        *   `args`: List of arguments for the command.
+        *   `env`: Dictionary of environment variables for the MCP server process (e.g., API keys).
+    *   `SseServerParams`: For remote MCP servers via Server-Sent Events.
+        *   `url`: URL of the SSE endpoint.
+    *   `MCPToolset.from_server()` returns `(tools, exit_stack)`. The tools are ADK-compatible `BaseTool` instances.
+    *   Manage `exit_stack` for proper cleanup, especially with multiple MCP servers.
+*   **Running ADK Applications:**
+    *   `adk web`: Starts a web UI for development and testing.
+    *   `adk run`: For CLI interaction.
+    *   `adk api_server`: To expose an ADK agent as an API.
+    *   For `adk web` with MCP tools, agent definition should be in `agent.py` and an `__init__.py` should exist in the same directory. The `create_agent()` async function should return `(agent, exit_stack)`.
+
+## LightRAG
+*   **Purpose:** Knowledge Graph management, document indexing, RAG query interface, Ollama emulation for chat UIs.
+*   **Core Interaction with Project:** The `src/kb_service/graph_module.py` will interact with the LightRAG server's HTTP API.
+*   **Configuration:**
+    *   Requires a `.env` file in its startup directory.
+    *   Key environment variables for LightRAG server:
+        *   `LLM_BINDING`: (e.g., `openai`, `ollama`, `azure_openai`)
+        *   `LLM_MODEL`: (e.g., `gpt-4o`, `mistral-nemo:latest`)
+        *   `LLM_BINDING_HOST`: URL for the LLM API.
+        *   `LLM_BINDING_API_KEY`: API key for the LLM.
+        *   `EMBEDDING_BINDING`: (e.g., `ollama`, `openai`)
+        *   `EMBEDDING_MODEL`: (e.g., `bge-m3:latest`)
+        *   `EMBEDDING_BINDING_HOST`: URL for the embedding API.
+        *   `EMBEDDING_DIM`: Dimension of embeddings.
+        *   `LIGHTRAG_API_KEY`: API key to secure LightRAG server endpoints (if configured).
+        *   `WHITELIST_PATHS`: Paths excluded from API key check (e.g., `/health,/api/*`).
+        *   `AUTH_ACCOUNTS`, `TOKEN_SECRET`: For JWT-based Web UI authentication.
+        *   Storage selection (e.g., `LIGHTRAG_KV_STORAGE=JsonKVStorage`).
+    *   The project's `src/core/config.py` should define `LIGHT_RAG_SERVER_URL`.
+*   **Running LightRAG Server:**
+    *   `lightrag-server`: For Uvicorn (development).
+    *   `lightrag-gunicorn --workers <N>`: For Gunicorn (production, not Windows).
+    *   `--auto-scan-at-startup`: To index documents in `--input-dir` on startup.
+*   **Key API Endpoints (to be used by `src/kb_service/graph_module.py`):**
+    *   `POST /query`: Query the RAG system.
+        *   Payload: `{"query": "Your question", "mode": "hybrid"}` (mode can be `local`, `global`, `hybrid`, `naive`, `mix`).
+        *   Success Response: `{"response": "Generated answer"}`.
+    *   `POST /documents/text`: Insert text directly.
+        *   Payload: `{"text": "Text content to insert"}`.
+        *   Success Response: `{"status": "success", "message": "..."}`.
+    *   `POST /documents/scan`: Trigger scanning of the input directory.
+    *   `GET /health`: Check server health and configuration.
+    *   Consult `light-rag-server-api.json` or Swagger UI (`http://<lightrag_host>:<port>/docs`) for full API details.
+*   **KB Service Implementation (`src/kb_service/graph_module.py`):**
+    *   Implement methods to call LightRAG's `/query` endpoint for `query_knowledge(text: str) -> str`.
+    *   Implement methods to call LightRAG's `/documents/text` endpoint for `save_knowledge(text: str) -> bool`.
+*   **Ollama Emulation:** LightRAG can emulate an Ollama server (`/api/chat`, `/api/tags`), allowing integration with UIs like Open WebUI. Query modes can be selected with prefixes (e.g., `/mix What is LightRAG?`).
+
+## FastMCP
+*   **Purpose:** Pythonic way to build MCP (Model Context Protocol) servers and clients. Used in `src/mcp_service/server.py`.
+*   **Server Creation:**
+    *   `mcp = FastMCP(name="MyServerName")`
+    *   `@mcp.tool()`: Decorator to expose a Python function as an MCP tool. Type hints and docstrings are used for schema generation.
+    *   `@mcp.resource("your://uri")`: Decorator to expose data. Use `{placeholders}` for dynamic resources.
+    *   `@mcp.prompt()`: Decorator to define reusable message templates.
+*   **Context Object (`ctx: Context`):**
+    *   Injected into tool/resource/prompt functions if declared as a parameter.
+    *   Provides methods like `ctx.info()`, `ctx.error()` (logging to client), `ctx.sample()` (LLM completion from client), `ctx.http_request()`, `ctx.read_resource()`.
+*   **Running a FastMCP Server:**
+    *   `mcp.run()` or `asyncio.run(mcp.run_sse_async(...))`
+    *   Transports:
+        *   `stdio` (default): For local CLI tools.
+        *   `streamable-http`: Recommended for web deployments (e.g., `mcp.run(transport="streamable-http", host="0.0.0.0", port=8001, path="/mcp")`).
+        *   `sse`: For Server-Sent Events compatibility.
+*   **Client (`fastmcp.Client`):**
+    *   Used to interact with any MCP server programmatically.
+    *   Supports in-memory transport for testing: `async with Client(mcp_server_instance) as client: ...`.
+*   **OpenAPI/FastAPI Integration:**
+    *   `FastMCP.from_openapi()` or `FastMCP.from_fastapi()` can generate MCP servers from existing web APIs.
+*   **Project Usage:** `src/mcp_service/server.py` will define a `FastMCP` server exposing knowledge from the KB Service. Tools/resources will likely call `kb_service.api.query_knowledge`.
+
+## LiteLLM
+*   **Purpose:** Provides a consistent interface to over 100 LLMs (Gemini, OpenAI models, Claude, etc.).
+*   **Usage with Python SDK:**
+    ```python
+    from litellm import completion
+    import os
+
+    ## set ENV variables
+    os.environ["OPENAI_API_KEY"] = "your-openai-key"
+    os.environ["ANTHROPIC_API_KEY"] = "your-anthropic-key"
+
+    messages = [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Hello, how are you?"}]
+
+    # openai call
+    response = completion(model="openai/gpt-4o", messages=messages)
+
+    # anthropic call
+    response = completion(model="anthropic/claude-3-sonnet-20240229", messages=messages)
+    print(response)
+    ```
+* **Response format**
+    ```json
+    {
+        "id": "chatcmpl-565d891b-a42e-4c39-8d14-82a1f5208885",
+        "created": 1734366691,
+        "model": "claude-3-sonnet-20240229",
+        "object": "chat.completion",
+        "system_fingerprint": null,
+        "choices": [
+            {
+                "finish_reason": "stop",
+                "index": 0,
+                "message": {
+                    "content": "Hello! As an AI language model, I don't have feelings, but I'm operating properly and ready to assist you with any questions or tasks you may have. How can I help you today?",
+                    "role": "assistant",
+                    "tool_calls": null,
+                    "function_call": null
+                }
+            }
+        ],
+        "usage": {
+            "completion_tokens": 43,
+            "prompt_tokens": 13,
+            "total_tokens": 56,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+                "audio_tokens": null,
+                "cached_tokens": 0
+            },
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0
+        }
+    }
+    ```
+
+*   **Project Usage:**
+    *   Can be used by any ADK agent if flexibility in LLM choice is needed.
+    *   The Business Agent may use `litellm` to interpret natural language requests for updating the `docs/mermaid_list_features.md` file.
+
+# Tool/MCP Guidance
+
+## Model Context Protocol (MCP)
+*   **Concept:** An open standard for LLMs to communicate with external applications, data sources, and tools.
+*   **ADK as MCP Client:**
+    *   ADK agents can use tools from external MCP servers via `MCPToolset`.
+    *   Connection parameters (`StdioServerParameters` for local, `SseServerParams` for remote) define how to connect to the MCP server.
+    *   Example: Connecting to `@modelcontextprotocol/server-filesystem` or `@modelcontextprotocol/server-google-maps` using `npx`.
+*   **Exposing ADK Tools via MCP:**
+    *   The `src/mcp_service/server.py` uses `fast-mcp` to create an MCP server.
+    *   This server will expose tools/resources that interact with the `src/kb_service/` to provide knowledge.
+*   **`npx`:** Node Package Execute, used to run MCP servers distributed as Node.js packages (e.g., community MCP servers). Ensure `npx` is available in the environment.
+
+## Loguru
+*   **Usage:** Primary logging library for the project.
+*   **Configuration:** Centralized in `src/core/logger.py`.
+*   **Basic Usage:** `from src.core.logger import logger; logger.info("Message")`.
+*   **Levels:** `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`.
+*   **Sinks:** Configurable to output to `sys.stderr`, files, etc.
+
+## uv
+*   **Usage:** Primary package manager and virtual environment tool.
+*   **Commands:**
+    *   `uv venv`: Create virtual environment.
+    *   `uv add <package>`: Install packages.
+    *   `uv sync`: Install dependencies from `pyproject.toml`
+    *   `uv run <command>`: Run a command within the managed environment (e.g., `uv run pytest`).
+
+## Pytest
+*   **Usage:** Testing framework.
+*   **Running Tests:** `pytest` or `uv run pytest`.
+*   **Coverage:** `uv run pytest --cov=src --cov-report=html`.
+*   Follow conventions in the `# Unit Testing` section.

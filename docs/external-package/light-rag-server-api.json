@@ -1,0 +1,2437 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+      "title": "LightRAG Server API",
+      "version": "0165"
+    },
+    "paths": {
+      "/documents/scan": {
+        "post": {
+          "tags": [
+            "documents"
+          ],
+          "summary": "Scan For New Documents",
+          "description": "Trigger the scanning process for new documents.\n\nThis endpoint initiates a background task that scans the input directory for new documents\nand processes them. If a scanning process is already running, it returns a status indicating\nthat fact.\n\nReturns:\n    ScanResponse: A response object containing the scanning status",
+          "operationId": "scan_for_new_documents_documents_scan_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ScanResponse"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/documents/upload": {
+        "post": {
+          "tags": [
+            "documents"
+          ],
+          "summary": "Upload To Input Dir",
+          "description": "Upload a file to the input directory and index it.\n\nThis API endpoint accepts a file through an HTTP POST request, checks if the\nuploaded file is of a supported type, saves it in the specified input directory,\nindexes it for retrieval, and returns a success status with relevant details.\n\nArgs:\n    background_tasks: FastAPI BackgroundTasks for async processing\n    file (UploadFile): The file to be uploaded. It must have an allowed extension.\n\nReturns:\n    InsertResponse: A response object containing the upload status and a message.\n        status can be \"success\", \"duplicated\", or error is thrown.\n\nRaises:\n    HTTPException: If the file type is not supported (400) or other errors occur (500).",
+          "operationId": "upload_to_input_dir_documents_upload_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "$ref": "#/components/schemas/Body_upload_to_input_dir_documents_upload_post"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/InsertResponse"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/documents/text": {
+        "post": {
+          "tags": [
+            "documents"
+          ],
+          "summary": "Insert Text",
+          "description": "Insert text into the RAG system.\n\nThis endpoint allows you to insert text data into the RAG system for later retrieval\nand use in generating responses.\n\nArgs:\n    request (InsertTextRequest): The request body containing the text to be inserted.\n    background_tasks: FastAPI BackgroundTasks for async processing\n\nReturns:\n    InsertResponse: A response object containing the status of the operation.\n\nRaises:\n    HTTPException: If an error occurs during text processing (500).",
+          "operationId": "insert_text_documents_text_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsertTextRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/InsertResponse"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/documents/texts": {
+        "post": {
+          "tags": [
+            "documents"
+          ],
+          "summary": "Insert Texts",
+          "description": "Insert multiple texts into the RAG system.\n\nThis endpoint allows you to insert multiple text entries into the RAG system\nin a single request.\n\nArgs:\n    request (InsertTextsRequest): The request body containing the list of texts.\n    background_tasks: FastAPI BackgroundTasks for async processing\n\nReturns:\n    InsertResponse: A response object containing the status of the operation.\n\nRaises:\n    HTTPException: If an error occurs during text processing (500).",
+          "operationId": "insert_texts_documents_texts_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsertTextsRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/InsertResponse"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/documents/file": {
+        "post": {
+          "tags": [
+            "documents"
+          ],
+          "summary": "Insert File",
+          "description": "Insert a file directly into the RAG system.\n\nThis endpoint accepts a file upload and processes it for inclusion in the RAG system.\nThe file is saved temporarily and processed in the background.\n\nArgs:\n    background_tasks: FastAPI BackgroundTasks for async processing\n    file (UploadFile): The file to be processed\n\nReturns:\n    InsertResponse: A response object containing the status of the operation.\n\nRaises:\n    HTTPException: If the file type is not supported (400) or other errors occur (500).",
+          "operationId": "insert_file_documents_file_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "$ref": "#/components/schemas/Body_insert_file_documents_file_post"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/InsertResponse"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/documents/file_batch": {
+        "post": {
+          "tags": [
+            "documents"
+          ],
+          "summary": "Insert Batch",
+          "description": "Process multiple files in batch mode.\n\nThis endpoint allows uploading and processing multiple files simultaneously.\nIt handles partial successes and provides detailed feedback about failed files.\n\nArgs:\n    background_tasks: FastAPI BackgroundTasks for async processing\n    files (List[UploadFile]): List of files to process\n\nReturns:\n    InsertResponse: A response object containing:\n        - status: \"success\", \"partial_success\", or \"failure\"\n        - message: Detailed information about the operation results\n\nRaises:\n    HTTPException: If an error occurs during processing (500).",
+          "operationId": "insert_batch_documents_file_batch_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "$ref": "#/components/schemas/Body_insert_batch_documents_file_batch_post"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/InsertResponse"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/documents": {
+        "delete": {
+          "tags": [
+            "documents"
+          ],
+          "summary": "Clear Documents",
+          "description": "Clear all documents from the RAG system.\n\nThis endpoint deletes all documents, entities, relationships, and files from the system.\nIt uses the storage drop methods to properly clean up all data and removes all files\nfrom the input directory.\n\nReturns:\n    ClearDocumentsResponse: A response object containing the status and message.\n        - status=\"success\":           All documents and files were successfully cleared.\n        - status=\"partial_success\":   Document clear job exit with some errors.\n        - status=\"busy\":              Operation could not be completed because the pipeline is busy.\n        - status=\"fail\":              All storage drop operations failed, with message\n        - message: Detailed information about the operation results, including counts\n          of deleted files and any errors encountered.\n\nRaises:\n    HTTPException: Raised when a serious error occurs during the clearing process,\n                  with status code 500 and error details in the detail field.",
+          "operationId": "clear_documents_documents_delete",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ClearDocumentsResponse"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "get": {
+          "tags": [
+            "documents"
+          ],
+          "summary": "Documents",
+          "description": "Get the status of all documents in the system.\n\nThis endpoint retrieves the current status of all documents, grouped by their\nprocessing status (PENDING, PROCESSING, PROCESSED, FAILED).\n\nReturns:\n    DocsStatusesResponse: A response object containing a dictionary where keys are\n                        DocStatus values and values are lists of DocStatusResponse\n                        objects representing documents in each status category.\n\nRaises:\n    HTTPException: If an error occurs while retrieving document statuses (500).",
+          "operationId": "documents_documents_get",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/DocsStatusesResponse"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/documents/pipeline_status": {
+        "get": {
+          "tags": [
+            "documents"
+          ],
+          "summary": "Get Pipeline Status",
+          "description": "Get the current status of the document indexing pipeline.\n\nThis endpoint returns information about the current state of the document processing pipeline,\nincluding the processing status, progress information, and history messages.\n\nReturns:\n    PipelineStatusResponse: A response object containing:\n        - autoscanned (bool): Whether auto-scan has started\n        - busy (bool): Whether the pipeline is currently busy\n        - job_name (str): Current job name (e.g., indexing files/indexing texts)\n        - job_start (str, optional): Job start time as ISO format string\n        - docs (int): Total number of documents to be indexed\n        - batchs (int): Number of batches for processing documents\n        - cur_batch (int): Current processing batch\n        - request_pending (bool): Flag for pending request for processing\n        - latest_message (str): Latest message from pipeline processing\n        - history_messages (List[str], optional): List of history messages\n\nRaises:\n    HTTPException: If an error occurs while retrieving pipeline status (500)",
+          "operationId": "get_pipeline_status_documents_pipeline_status_get",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PipelineStatusResponse"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/documents/clear_cache": {
+        "post": {
+          "tags": [
+            "documents"
+          ],
+          "summary": "Clear Cache",
+          "description": "Clear cache data from the LLM response cache storage.\n\nThis endpoint allows clearing specific modes of cache or all cache if no modes are specified.\nValid modes include: \"default\", \"naive\", \"local\", \"global\", \"hybrid\", \"mix\".\n- \"default\" represents extraction cache.\n- Other modes correspond to different query modes.\n\nArgs:\n    request (ClearCacheRequest): The request body containing optional modes to clear.\n\nReturns:\n    ClearCacheResponse: A response object containing the status and message.\n\nRaises:\n    HTTPException: If an error occurs during cache clearing (400 for invalid modes, 500 for other errors).",
+          "operationId": "clear_cache_documents_clear_cache_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearCacheRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ClearCacheResponse"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/query": {
+        "post": {
+          "tags": [
+            "query"
+          ],
+          "summary": "Query Text",
+          "description": "Handle a POST request at the /query endpoint to process user queries using RAG capabilities.\n\nParameters:\n    request (QueryRequest): The request object containing the query parameters.\nReturns:\n    QueryResponse: A Pydantic model containing the result of the query processing.\n               If a string is returned (e.g., cache hit), it's directly returned.\n               Otherwise, an async generator may be used to build the response.\n\nRaises:\n    HTTPException: Raised when an error occurs during the request handling process,\n               with status code 500 and detail containing the exception message.",
+          "operationId": "query_text_query_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueryRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/QueryResponse"
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/query/stream": {
+        "post": {
+          "tags": [
+            "query"
+          ],
+          "summary": "Query Text Stream",
+          "description": "This endpoint performs a retrieval-augmented generation (RAG) query and streams the response.\n\nArgs:\n    request (QueryRequest): The request object containing the query parameters.\n    optional_api_key (Optional[str], optional): An optional API key for authentication. Defaults to None.\n\nReturns:\n    StreamingResponse: A streaming response containing the RAG query results.",
+          "operationId": "query_text_stream_query_stream_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueryRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/graph/label/list": {
+        "get": {
+          "tags": [
+            "graph"
+          ],
+          "summary": "Get Graph Labels",
+          "description": "Get all graph labels\n\nReturns:\n    List[str]: List of graph labels",
+          "operationId": "get_graph_labels_graph_label_list_get",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/graphs": {
+        "get": {
+          "tags": [
+            "graph"
+          ],
+          "summary": "Get Knowledge Graph",
+          "description": "Retrieve a connected subgraph of nodes where the label includes the specified label.\nWhen reducing the number of nodes, the prioritization criteria are as follows:\n    1. Hops(path) to the staring node take precedence\n    2. Followed by the degree of the nodes\n\nArgs:\n    label (str): Label of the starting node\n    max_depth (int, optional): Maximum depth of the subgraph,Defaults to 3\n    max_nodes: Maxiumu nodes to return\n\nReturns:\n    Dict[str, List[str]]: Knowledge graph for label",
+          "operationId": "get_knowledge_graph_graphs_get",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "label",
+              "in": "query",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "description": "Label to get knowledge graph for",
+                "title": "Label"
+              },
+              "description": "Label to get knowledge graph for"
+            },
+            {
+              "name": "max_depth",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum depth of graph",
+                "default": 3,
+                "title": "Max Depth"
+              },
+              "description": "Maximum depth of graph"
+            },
+            {
+              "name": "max_nodes",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum nodes to return",
+                "default": 1000,
+                "title": "Max Nodes"
+              },
+              "description": "Maximum nodes to return"
+            },
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/graph/entity/exists": {
+        "get": {
+          "tags": [
+            "graph"
+          ],
+          "summary": "Check Entity Exists",
+          "description": "Check if an entity with the given name exists in the knowledge graph\n\nArgs:\n    name (str): Name of the entity to check\n\nReturns:\n    Dict[str, bool]: Dictionary with 'exists' key indicating if entity exists",
+          "operationId": "check_entity_exists_graph_entity_exists_get",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "name",
+              "in": "query",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "description": "Entity name to check",
+                "title": "Name"
+              },
+              "description": "Entity name to check"
+            },
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/graph/entity/edit": {
+        "post": {
+          "tags": [
+            "graph"
+          ],
+          "summary": "Update Entity",
+          "description": "Update an entity's properties in the knowledge graph\n\nArgs:\n    request (EntityUpdateRequest): Request containing entity name, updated data, and rename flag\n\nReturns:\n    Dict: Updated entity information",
+          "operationId": "update_entity_graph_entity_edit_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityUpdateRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/graph/relation/edit": {
+        "post": {
+          "tags": [
+            "graph"
+          ],
+          "summary": "Update Relation",
+          "description": "Update a relation's properties in the knowledge graph\n\nArgs:\n    request (RelationUpdateRequest): Request containing source ID, target ID and updated data\n\nReturns:\n    Dict: Updated relation information",
+          "operationId": "update_relation_graph_relation_edit_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationUpdateRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/version": {
+        "get": {
+          "tags": [
+            "ollama"
+          ],
+          "summary": "Get Version",
+          "description": "Get Ollama version information",
+          "operationId": "get_version_api_version_get",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/tags": {
+        "get": {
+          "tags": [
+            "ollama"
+          ],
+          "summary": "Get Tags",
+          "description": "Return available models acting as an Ollama server",
+          "operationId": "get_tags_api_tags_get",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/generate": {
+        "post": {
+          "tags": [
+            "ollama"
+          ],
+          "summary": "Generate",
+          "description": "Handle generate completion requests acting as an Ollama model\nFor compatibility purpose, the request is not processed by LightRAG,\nand will be handled by underlying LLM model.",
+          "operationId": "generate_api_generate_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OllamaGenerateRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/chat": {
+        "post": {
+          "tags": [
+            "ollama"
+          ],
+          "summary": "Chat",
+          "description": "Process chat completion requests acting as an Ollama model\nRoutes user queries through LightRAG by selecting query mode based on prefix indicators.\nDetects and forwards OpenWebUI session-related requests (for meta data generation task) directly to LLM.",
+          "operationId": "chat_api_chat_post",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OllamaChatRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/": {
+        "get": {
+          "summary": "Redirect To Webui",
+          "description": "Redirect root path to /webui",
+          "operationId": "redirect_to_webui__get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/auth-status": {
+        "get": {
+          "summary": "Get Auth Status",
+          "description": "Get authentication status and guest token if auth is not configured",
+          "operationId": "get_auth_status_auth_status_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/login": {
+        "post": {
+          "summary": "Login",
+          "operationId": "login_login_post",
+          "requestBody": {
+            "content": {
+              "application/x-www-form-urlencoded": {
+                "schema": {
+                  "$ref": "#/components/schemas/Body_login_login_post"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/health": {
+        "get": {
+          "summary": "Get Status",
+          "description": "Get current system status",
+          "operationId": "get_status_health_get",
+          "security": [
+            {
+              "OAuth2PasswordBearer": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "api_key_header_value",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Api Key Header Value"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {
+
+                  }
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "Body_insert_batch_documents_file_batch_post": {
+          "properties": {
+            "files": {
+              "items": {
+                "type": "string",
+                "format": "binary"
+              },
+              "type": "array",
+              "title": "Files"
+            }
+          },
+          "type": "object",
+          "required": [
+            "files"
+          ],
+          "title": "Body_insert_batch_documents_file_batch_post"
+        },
+        "Body_insert_file_documents_file_post": {
+          "properties": {
+            "file": {
+              "type": "string",
+              "format": "binary",
+              "title": "File"
+            }
+          },
+          "type": "object",
+          "required": [
+            "file"
+          ],
+          "title": "Body_insert_file_documents_file_post"
+        },
+        "Body_login_login_post": {
+          "properties": {
+            "grant_type": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^password$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Grant Type"
+            },
+            "username": {
+              "type": "string",
+              "title": "Username"
+            },
+            "password": {
+              "type": "string",
+              "title": "Password"
+            },
+            "scope": {
+              "type": "string",
+              "title": "Scope",
+              "default": ""
+            },
+            "client_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Client Id"
+            },
+            "client_secret": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Client Secret"
+            }
+          },
+          "type": "object",
+          "required": [
+            "username",
+            "password"
+          ],
+          "title": "Body_login_login_post"
+        },
+        "Body_upload_to_input_dir_documents_upload_post": {
+          "properties": {
+            "file": {
+              "type": "string",
+              "format": "binary",
+              "title": "File"
+            }
+          },
+          "type": "object",
+          "required": [
+            "file"
+          ],
+          "title": "Body_upload_to_input_dir_documents_upload_post"
+        },
+        "ClearCacheRequest": {
+          "properties": {
+            "modes": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "default",
+                      "naive",
+                      "local",
+                      "global",
+                      "hybrid",
+                      "mix"
+                    ]
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Modes",
+              "description": "Modes of cache to clear. If None, clears all cache."
+            }
+          },
+          "type": "object",
+          "title": "ClearCacheRequest",
+          "description": "Request model for clearing cache\n\nAttributes:\n    modes: Optional list of cache modes to clear",
+          "example": {
+            "modes": [
+              "default",
+              "naive"
+            ]
+          }
+        },
+        "ClearCacheResponse": {
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "success",
+                "fail"
+              ],
+              "title": "Status",
+              "description": "Status of the clear operation"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message",
+              "description": "Message describing the operation result"
+            }
+          },
+          "type": "object",
+          "required": [
+            "status",
+            "message"
+          ],
+          "title": "ClearCacheResponse",
+          "description": "Response model for cache clearing operation\n\nAttributes:\n    status: Status of the clear operation\n    message: Detailed message describing the operation result",
+          "example": {
+            "message": "Successfully cleared cache for modes: ['default', 'naive']",
+            "status": "success"
+          }
+        },
+        "ClearDocumentsResponse": {
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "success",
+                "partial_success",
+                "busy",
+                "fail"
+              ],
+              "title": "Status",
+              "description": "Status of the clear operation"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message",
+              "description": "Message describing the operation result"
+            }
+          },
+          "type": "object",
+          "required": [
+            "status",
+            "message"
+          ],
+          "title": "ClearDocumentsResponse",
+          "description": "Response model for document clearing operation\n\nAttributes:\n    status: Status of the clear operation\n    message: Detailed message describing the operation result",
+          "example": {
+            "message": "All documents cleared successfully. Deleted 15 files.",
+            "status": "success"
+          }
+        },
+        "DocStatus": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "processing",
+            "processed",
+            "failed"
+          ],
+          "title": "DocStatus",
+          "description": "Document processing status"
+        },
+        "DocStatusResponse": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "title": "Id",
+              "description": "Document identifier"
+            },
+            "content_summary": {
+              "type": "string",
+              "title": "Content Summary",
+              "description": "Summary of document content"
+            },
+            "content_length": {
+              "type": "integer",
+              "title": "Content Length",
+              "description": "Length of document content in characters"
+            },
+            "status": {
+              "$ref": "#/components/schemas/DocStatus",
+              "description": "Current processing status"
+            },
+            "created_at": {
+              "type": "string",
+              "title": "Created At",
+              "description": "Creation timestamp (ISO format string)"
+            },
+            "updated_at": {
+              "type": "string",
+              "title": "Updated At",
+              "description": "Last update timestamp (ISO format string)"
+            },
+            "chunks_count": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Chunks Count",
+              "description": "Number of chunks the document was split into"
+            },
+            "error": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Error",
+              "description": "Error message if processing failed"
+            },
+            "metadata": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Metadata",
+              "description": "Additional metadata about the document"
+            },
+            "file_path": {
+              "type": "string",
+              "title": "File Path",
+              "description": "Path to the document file"
+            }
+          },
+          "type": "object",
+          "required": [
+            "id",
+            "content_summary",
+            "content_length",
+            "status",
+            "created_at",
+            "updated_at",
+            "file_path"
+          ],
+          "title": "DocStatusResponse",
+          "example": {
+            "chunks_count": 12,
+            "content_length": 15240,
+            "content_summary": "Research paper on machine learning",
+            "created_at": "2025-03-31T12:34:56",
+            "file_path": "research_paper.pdf",
+            "id": "doc_123456",
+            "metadata": {
+              "author": "John Doe",
+              "year": 2025
+            },
+            "status": "PROCESSED",
+            "updated_at": "2025-03-31T12:35:30"
+          }
+        },
+        "DocsStatusesResponse": {
+          "properties": {
+            "statuses": {
+              "additionalProperties": {
+                "items": {
+                  "$ref": "#/components/schemas/DocStatusResponse"
+                },
+                "type": "array"
+              },
+              "propertyNames": {
+                "$ref": "#/components/schemas/DocStatus"
+              },
+              "type": "object",
+              "title": "Statuses",
+              "description": "Dictionary mapping document status to lists of document status responses"
+            }
+          },
+          "type": "object",
+          "title": "DocsStatusesResponse",
+          "description": "Response model for document statuses\n\nAttributes:\n    statuses: Dictionary mapping document status to lists of document status responses",
+          "example": {
+            "statuses": {
+              "PENDING": [
+                {
+                  "content_length": 5000,
+                  "content_summary": "Pending document",
+                  "created_at": "2025-03-31T10:00:00",
+                  "file_path": "pending_doc.pdf",
+                  "id": "doc_123",
+                  "status": "PENDING",
+                  "updated_at": "2025-03-31T10:00:00"
+                }
+              ],
+              "PROCESSED": [
+                {
+                  "chunks_count": 8,
+                  "content_length": 8000,
+                  "content_summary": "Processed document",
+                  "created_at": "2025-03-31T09:00:00",
+                  "file_path": "processed_doc.pdf",
+                  "id": "doc_456",
+                  "status": "PROCESSED",
+                  "updated_at": "2025-03-31T09:05:00"
+                }
+              ]
+            }
+          }
+        },
+        "EntityUpdateRequest": {
+          "properties": {
+            "entity_name": {
+              "type": "string",
+              "title": "Entity Name"
+            },
+            "updated_data": {
+              "additionalProperties": true,
+              "type": "object",
+              "title": "Updated Data"
+            },
+            "allow_rename": {
+              "type": "boolean",
+              "title": "Allow Rename",
+              "default": false
+            }
+          },
+          "type": "object",
+          "required": [
+            "entity_name",
+            "updated_data"
+          ],
+          "title": "EntityUpdateRequest"
+        },
+        "HTTPValidationError": {
+          "properties": {
+            "detail": {
+              "items": {
+                "$ref": "#/components/schemas/ValidationError"
+              },
+              "type": "array",
+              "title": "Detail"
+            }
+          },
+          "type": "object",
+          "title": "HTTPValidationError"
+        },
+        "InsertResponse": {
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "success",
+                "duplicated",
+                "partial_success",
+                "failure"
+              ],
+              "title": "Status",
+              "description": "Status of the operation"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message",
+              "description": "Message describing the operation result"
+            }
+          },
+          "type": "object",
+          "required": [
+            "status",
+            "message"
+          ],
+          "title": "InsertResponse",
+          "description": "Response model for document insertion operations\n\nAttributes:\n    status: Status of the operation (success, duplicated, partial_success, failure)\n    message: Detailed message describing the operation result",
+          "example": {
+            "message": "File 'document.pdf' uploaded successfully. Processing will continue in background.",
+            "status": "success"
+          }
+        },
+        "InsertTextRequest": {
+          "properties": {
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Text",
+              "description": "The text to insert"
+            }
+          },
+          "type": "object",
+          "required": [
+            "text"
+          ],
+          "title": "InsertTextRequest",
+          "description": "Request model for inserting a single text document\n\nAttributes:\n    text: The text content to be inserted into the RAG system",
+          "example": {
+            "text": "This is a sample text to be inserted into the RAG system."
+          }
+        },
+        "InsertTextsRequest": {
+          "properties": {
+            "texts": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "title": "Texts",
+              "description": "The texts to insert"
+            }
+          },
+          "type": "object",
+          "required": [
+            "texts"
+          ],
+          "title": "InsertTextsRequest",
+          "description": "Request model for inserting multiple text documents\n\nAttributes:\n    texts: List of text contents to be inserted into the RAG system",
+          "example": {
+            "texts": [
+              "This is the first text to be inserted.",
+              "This is the second text to be inserted."
+            ]
+          }
+        },
+        "OllamaChatRequest": {
+          "properties": {
+            "model": {
+              "type": "string",
+              "title": "Model"
+            },
+            "messages": {
+              "items": {
+                "$ref": "#/components/schemas/OllamaMessage"
+              },
+              "type": "array",
+              "title": "Messages"
+            },
+            "stream": {
+              "type": "boolean",
+              "title": "Stream",
+              "default": true
+            },
+            "options": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Options"
+            },
+            "system": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "System"
+            }
+          },
+          "type": "object",
+          "required": [
+            "model",
+            "messages"
+          ],
+          "title": "OllamaChatRequest"
+        },
+        "OllamaGenerateRequest": {
+          "properties": {
+            "model": {
+              "type": "string",
+              "title": "Model"
+            },
+            "prompt": {
+              "type": "string",
+              "title": "Prompt"
+            },
+            "system": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "System"
+            },
+            "stream": {
+              "type": "boolean",
+              "title": "Stream",
+              "default": false
+            },
+            "options": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Options"
+            }
+          },
+          "type": "object",
+          "required": [
+            "model",
+            "prompt"
+          ],
+          "title": "OllamaGenerateRequest"
+        },
+        "OllamaMessage": {
+          "properties": {
+            "role": {
+              "type": "string",
+              "title": "Role"
+            },
+            "content": {
+              "type": "string",
+              "title": "Content"
+            },
+            "images": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Images"
+            }
+          },
+          "type": "object",
+          "required": [
+            "role",
+            "content"
+          ],
+          "title": "OllamaMessage"
+        },
+        "PipelineStatusResponse": {
+          "properties": {
+            "autoscanned": {
+              "type": "boolean",
+              "title": "Autoscanned",
+              "default": false
+            },
+            "busy": {
+              "type": "boolean",
+              "title": "Busy",
+              "default": false
+            },
+            "job_name": {
+              "type": "string",
+              "title": "Job Name",
+              "default": "Default Job"
+            },
+            "job_start": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Job Start"
+            },
+            "docs": {
+              "type": "integer",
+              "title": "Docs",
+              "default": 0
+            },
+            "batchs": {
+              "type": "integer",
+              "title": "Batchs",
+              "default": 0
+            },
+            "cur_batch": {
+              "type": "integer",
+              "title": "Cur Batch",
+              "default": 0
+            },
+            "request_pending": {
+              "type": "boolean",
+              "title": "Request Pending",
+              "default": false
+            },
+            "latest_message": {
+              "type": "string",
+              "title": "Latest Message",
+              "default": ""
+            },
+            "history_messages": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "History Messages"
+            },
+            "update_status": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Update Status"
+            }
+          },
+          "additionalProperties": true,
+          "type": "object",
+          "title": "PipelineStatusResponse",
+          "description": "Response model for pipeline status\n\nAttributes:\n    autoscanned: Whether auto-scan has started\n    busy: Whether the pipeline is currently busy\n    job_name: Current job name (e.g., indexing files/indexing texts)\n    job_start: Job start time as ISO format string (optional)\n    docs: Total number of documents to be indexed\n    batchs: Number of batches for processing documents\n    cur_batch: Current processing batch\n    request_pending: Flag for pending request for processing\n    latest_message: Latest message from pipeline processing\n    history_messages: List of history messages\n    update_status: Status of update flags for all namespaces"
+        },
+        "QueryRequest": {
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Query",
+              "description": "The query text"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "local",
+                "global",
+                "hybrid",
+                "naive",
+                "mix",
+                "bypass"
+              ],
+              "title": "Mode",
+              "description": "Query mode",
+              "default": "hybrid"
+            },
+            "only_need_context": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Only Need Context",
+              "description": "If True, only returns the retrieved context without generating a response."
+            },
+            "only_need_prompt": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Only Need Prompt",
+              "description": "If True, only returns the generated prompt without producing a response."
+            },
+            "response_type": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Response Type",
+              "description": "Defines the response format. Examples: 'Multiple Paragraphs', 'Single Paragraph', 'Bullet Points'."
+            },
+            "top_k": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Top K",
+              "description": "Number of top items to retrieve. Represents entities in 'local' mode and relationships in 'global' mode."
+            },
+            "max_token_for_text_unit": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Token For Text Unit",
+              "description": "Maximum number of tokens allowed for each retrieved text chunk."
+            },
+            "max_token_for_global_context": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Token For Global Context",
+              "description": "Maximum number of tokens allocated for relationship descriptions in global retrieval."
+            },
+            "max_token_for_local_context": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Token For Local Context",
+              "description": "Maximum number of tokens allocated for entity descriptions in local retrieval."
+            },
+            "hl_keywords": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hl Keywords",
+              "description": "List of high-level keywords to prioritize in retrieval."
+            },
+            "ll_keywords": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ll Keywords",
+              "description": "List of low-level keywords to refine retrieval focus."
+            },
+            "conversation_history": {
+              "anyOf": [
+                {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Conversation History",
+              "description": "Stores past conversation history to maintain context. Format: [{'role': 'user/assistant', 'content': 'message'}]."
+            },
+            "history_turns": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "History Turns",
+              "description": "Number of complete conversation turns (user-assistant pairs) to consider in the response context."
+            }
+          },
+          "type": "object",
+          "required": [
+            "query"
+          ],
+          "title": "QueryRequest"
+        },
+        "QueryResponse": {
+          "properties": {
+            "response": {
+              "type": "string",
+              "title": "Response",
+              "description": "The generated response"
+            }
+          },
+          "type": "object",
+          "required": [
+            "response"
+          ],
+          "title": "QueryResponse"
+        },
+        "RelationUpdateRequest": {
+          "properties": {
+            "source_id": {
+              "type": "string",
+              "title": "Source Id"
+            },
+            "target_id": {
+              "type": "string",
+              "title": "Target Id"
+            },
+            "updated_data": {
+              "additionalProperties": true,
+              "type": "object",
+              "title": "Updated Data"
+            }
+          },
+          "type": "object",
+          "required": [
+            "source_id",
+            "target_id",
+            "updated_data"
+          ],
+          "title": "RelationUpdateRequest"
+        },
+        "ScanResponse": {
+          "properties": {
+            "status": {
+              "type": "string",
+              "const": "scanning_started",
+              "title": "Status",
+              "description": "Status of the scanning operation"
+            },
+            "message": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Message",
+              "description": "Additional details about the scanning operation"
+            }
+          },
+          "type": "object",
+          "required": [
+            "status"
+          ],
+          "title": "ScanResponse",
+          "description": "Response model for document scanning operation\n\nAttributes:\n    status: Status of the scanning operation\n    message: Optional message with additional details",
+          "example": {
+            "message": "Scanning process has been initiated in the background",
+            "status": "scanning_started"
+          }
+        },
+        "ValidationError": {
+          "properties": {
+            "loc": {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              },
+              "type": "array",
+              "title": "Location"
+            },
+            "msg": {
+              "type": "string",
+              "title": "Message"
+            },
+            "type": {
+              "type": "string",
+              "title": "Error Type"
+            }
+          },
+          "type": "object",
+          "required": [
+            "loc",
+            "msg",
+            "type"
+          ],
+          "title": "ValidationError"
+        }
+      },
+      "securitySchemes": {
+        "OAuth2PasswordBearer": {
+          "type": "oauth2",
+          "description": "OAuth2 Password Authentication",
+          "flows": {
+            "password": {
+              "scopes": {
+
+              },
+              "tokenUrl": "login"
+            }
+          }
+        }
+      }
+    }
+  }
