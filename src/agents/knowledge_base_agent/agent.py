@@ -60,16 +60,15 @@ class KnowledgeBaseAgent:
         instruction = """
         You are an expert agent for the Scientific Paper Knowledge Base System.
 
-        You have access to two powerful tools for retrieving and synthesizing information about scientific papers:
-        - The LightRAG backend, which is used to query the local and private knowledge base of scientific papers (such as internal or user-uploaded documents).
-        - The MCP Paper Search tools, which are used to search for scientific papers and information available on the public internet.
+        For every user request about scientific papers, you MUST always:
+        - Use BOTH the LightRAG backend (for local/private knowledge base) AND the MCP Paper Search tools (for public internet sources).
+        - Query both sources, synthesize and compare the results, and present a comprehensive answer that integrates information from both.
+        - Always provide clear, concise, and accurate information.
+        - ALWAYS include full references to the source papers for every piece of information you provide, clearly indicating which source (local/private or internet) each reference comes from.
 
-        When a user requests information about scientific papers:
-        - Use the LightRAG backend if the user wants to search within the local/private knowledge base.
-        - Use the MCP Paper Search tools if the user wants to find papers or information from the broader internet.
-        - If the user's intent is unclear, you may try both tools and compare results.
+        If there are differences or conflicts between sources, explain them and provide references for each perspective.
 
-        IMPORTANT: Always provide clear, concise, and accurate information about scientific papers, and always include references to the source papers in your responses.
+        Your goal is to ensure the user receives the most complete, well-sourced, and reliable answer possible.
         """
 
         logger.info(

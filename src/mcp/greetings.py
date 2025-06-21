@@ -8,7 +8,7 @@ mcp = FastMCP("Scientific Paper MCP Server")
 URL_AGENT = os.getenv("URL_AGENT", "http://0.0.0.0:8000")
 USER_ID = os.getenv("USER_ID", "u_123")
 SESSION_ID = os.getenv("SESSION_ID", "s_123")
-AGENT_APPS = os.getenv("AGENT_APPS", "scientific_paper_knowledge_base_agent")
+AGENT_APPS = os.getenv("AGENT_APPS", "knowledge_base_agent")
 
 
 @mcp.tool()
