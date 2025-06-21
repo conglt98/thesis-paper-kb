@@ -33,98 +33,40 @@ logger.info(f"NEO4J_URI: {NEO4J_URI}")
 logger.info(f"NEO4J_USER: {NEO4J_USER}")
 logger.info(f"NEO4J_PASSWORD: {NEO4J_PASSWORD}")
 
+sample_paper = """
+# Scientific Paper: Deep Learning for NLP
 
-sample_docs = """
+## Abstract
+This paper explores the application of deep learning techniques to natural language processing tasks.
 
-# Feature Documentation: [Maestro: Aequor]: Auto Submission: Auto Submission flow Email
+## Authors
+- Alice Smith
+- Bob Johnson
 
-## 1. Feature Overview & Identification
+## Publication Year
+2024
 
-*   **Feature Name:** [Maestro: Aequor]: Auto Submission: Auto Submission flow Email
-*   **Status:** Released for UAT
-*   **Product/Module:** maestro
-*   **Brief Description:**
-    *   Automates the job application process by allowing candidates to auto-submit applications for their top 3 matched jobs via email.
-*   **Business Goal/Value Proposition:**
-    *   Streamline and accelerate the application process for candidates, improving engagement and submission rates.
-*   **Tags/Keywords:** Auto Submission, Email, Job Matching, Candidate Application
+## DOI
+10.1234/dlnlp.2024.001
 
-## 2. Business Context & User Focus
+## Keywords
+- Deep Learning
+- NLP
+- Transformers
 
-*   **Target User(s):**
-    *   Candidates using the recruitment platform.
-*   **User Problem/Need:**
-    *   Want faster application process for best matched jobs.
-*   **User Stories / Acceptance Criteria:**
-    *   System sends email based on matching criteria (e.g., score ≥ 98%, open jobs, custom field set).
-    *   Sends top 3 jobs ensuring different facilities or shifts.
-    *   One email per job per day.
-    *   Candidate responses trigger auto submission or feedback collection.
-    *   Reminder emails sent if no response.
-*   **User Journey / Workflow(s) Description:**
-    1. System identifies matching jobs.
-    2. Sends email to candidate.
-    3. Candidate responds with Yes or No.
-    4. System processes response and submits or collects feedback.
-    5. Reminder sent if needed.
-*   **Business Logic & Rules:**
-    *   Matching score and candidate status criteria.
-    *   Email and SMS templates used.
-*   **Success Metrics:**
-    *   Increased application submission rates.
-    *   Improved feedback loop for matching algorithm.
+## Sections
+### Introduction
+Deep learning has revolutionized NLP in recent years...
 
-## 3. User Guide: Using [Maestro: Aequor]: Auto Submission: Auto Submission flow Email
+### Methods
+We use transformer-based models...
 
-### 3.1. Purpose of this Feature
-*   To automate application submissions via email interaction.
+### Results
+Our experiments show...
 
-### 3.2. Before You Start (Pre-requisites)
-*   Candidate must meet auto submission criteria.
-
-### 3.3. Step-by-Step Instructions
-
-*   No manual steps; automated email sending and response processing.
-
-### 3.4. Troubleshooting / FAQs
-
-*   No information provided.
-
-## 4. Additional Information
-
-*   **Training Points:**
-    *   Emphasize automation flow and candidate interaction.
-*   **Related Features:**
-    *   Parent Epic: [Maestro: Aequor] Auto Submission (AHS-91)
-
-## 5. Ownership & Stakeholders
-
-*   **Product Owner:** No information provided.
-*   **Tech Lead:** No information provided.
-*   **Key Business Stakeholders:** No information provided.
-*   **Development Team:** Project_Manager
-
-## 6. Reference Links
-
-*   **Product:** maestro
-*   **Project Name:** AHS
-*   **Epic ID:** AHS-91
-*   **Epic Name:** [Maestro: Aequor] Auto Submission
-*   **Epic Status:** Internal UAT
-*   **Feature Name:** [Maestro: Aequor]: Auto Submission: Auto Submission flow Email
-*   **Ticket ID:** AHS-92
-*   **Figma Links:** No information provided.
-*   **Docs Links:** No information provided.
-*   **Confluence Links:** No information provided.
-*   **Gitlab Links:** No information provided.
-*   **Team:** Project_Manager
-
-## 7. Actors
-
-*   **Actor 1:**
-    *   **Name:** Candidate
-    *   **Description:** Recipient of auto submission emails and responder to engagement interactions.
-""".strip()
+### Conclusion
+Deep learning models achieve state-of-the-art results on many NLP tasks.
+"""
 
 
 def test_lightrag_backend():
@@ -196,6 +138,19 @@ def main():
 
     # Test Graphiti backend
     asyncio.run(test_graphiti_backend())
+
+    # Example usage of KnowledgeBaseService for scientific paper
+    service = KnowledgeBaseService()
+    # Save the sample paper
+    result = service.markdown_module.save(
+        text=sample_paper,
+        paper_title="Deep Learning for NLP",
+        doi="10.1234/dlnlp.2024.001",
+    )
+    print(f"Save result: {result}")
+    # List papers
+    papers = service.markdown_module.list_papers()
+    print(f"Papers in knowledge base: {papers}")
 
 
 if __name__ == "__main__":

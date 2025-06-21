@@ -1,7 +1,7 @@
 """
-LightRAG Knowledge Graph backend for the AI-Powered Knowledge Base System.
+LightRAG Knowledge Graph backend for the Scientific Paper Knowledge Base System.
 
-This module provides an implementation of the BaseKnowledgeGraph interface using LightRAG.
+This module provides an implementation of the BaseKnowledgeGraph interface using LightRAG for scientific paper knowledge.
 """
 
 import requests
@@ -12,7 +12,6 @@ import lightrag.utils
 from src.core.config import (
     LIGHT_RAG_SERVER_URL,
     LIGHT_RAG_API_KEY,
-    FEATURES_LIST_PATH,
     DEFAULT_LLM_MODEL,
 )
 from src.core.logger import logger
@@ -48,7 +47,7 @@ lightrag.utils.process_combine_contexts = my_process_combine_contexts
 
 class LightRAGKnowledgeGraph(BaseKnowledgeGraph):
     """
-    LightRAG Knowledge Graph implementation for interacting with the LightRAG server and managing the features list.
+    LightRAG Knowledge Graph implementation for interacting with the LightRAG server for scientific paper knowledge.
     """
 
     def __init__(
@@ -63,12 +62,11 @@ class LightRAGKnowledgeGraph(BaseKnowledgeGraph):
         Args:
             base_url: The base URL of the LightRAG server
             api_key: The API key for the LightRAG server
-            llm_model: The LLM model to use for feature list management
+            llm_model: (Unused, kept for compatibility)
         """
         self.base_url = base_url or LIGHT_RAG_SERVER_URL
         self.api_key = api_key or LIGHT_RAG_API_KEY
         self.llm_model = llm_model or DEFAULT_LLM_MODEL
-        self.features_path = FEATURES_LIST_PATH
 
         logger.info(
             f"Initialized LightRAG Knowledge Graph with server at {self.base_url}"
@@ -81,7 +79,7 @@ class LightRAGKnowledgeGraph(BaseKnowledgeGraph):
 
     def query(self, query_text: str, mode: str = "local", **kwargs) -> QueryResponse:
         """
-        Query the knowledge graph with the given text.
+        Query the scientific paper knowledge base (LightRAG) with the given text.
 
         Args:
             query_text: The query text
@@ -89,28 +87,20 @@ class LightRAGKnowledgeGraph(BaseKnowledgeGraph):
             **kwargs: Additional parameters for the query
 
         Returns:
-            QueryResponse object containing the response from the knowledge graph
+            QueryResponse object containing the response from the knowledge base
         """
         endpoint = f"{self.base_url}/query"
-
-        # Prepare request payload
         payload = QueryRequest(query=query_text, mode=mode, **kwargs).dict(
             exclude_none=True
         )
-
         logger.debug(f"Querying LightRAG knowledge graph with: {payload}")
-
         try:
             response = requests.post(endpoint, json=payload, headers=self.headers)
             response.raise_for_status()
-
-            # Parse the response JSON
             data = response.json()
-
             return QueryResponse(
                 response=data.get("response", ""), status="success", error_message=None
             )
-
         except requests.exceptions.RequestException as e:
             error_msg = f"Error querying LightRAG knowledge graph: {str(e)}"
             logger.error(error_msg)
@@ -118,7 +108,7 @@ class LightRAGKnowledgeGraph(BaseKnowledgeGraph):
 
     async def async_query(self, query_text: str, mode: str = "local", **kwargs) -> str:
         """
-        Async implementation of the query method.
+        Async implementation of the query method for scientific paper knowledge.
 
         Args:
             query_text: The query text
@@ -126,17 +116,13 @@ class LightRAGKnowledgeGraph(BaseKnowledgeGraph):
             **kwargs: Additional parameters for the query
 
         Returns:
-            The response text from the knowledge graph
+            The response text from the knowledge base
         """
         endpoint = f"{self.base_url}/query"
-
-        # Prepare request payload
         payload = QueryRequest(query=query_text, mode=mode, **kwargs).dict(
             exclude_none=True
         )
-
         logger.debug(f"Async querying LightRAG knowledge graph with: {payload}")
-
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
@@ -144,51 +130,39 @@ class LightRAGKnowledgeGraph(BaseKnowledgeGraph):
                 ) as response:
                     response.raise_for_status()
                     data = await response.json()
-
-            # Return the response text
             return data.get("response", "")
-
         except (aiohttp.ClientError, ValueError) as e:
             error_msg = f"Error async querying LightRAG knowledge graph: {str(e)}"
             logger.error(error_msg)
             raise RuntimeError(error_msg)
 
     def save(
-        self, text: str, name: Optional[str] = None, domain: str = "tech"
+        self, text: str, name: Optional[str] = None, domain: str = "scientific_paper"
     ) -> InsertResponse:
         """
-        Save the given text to the knowledge graph.
+        Save the given scientific paper text to the knowledge base (LightRAG).
 
         Args:
             text: The text to save
-            name: Optional name for the episode (not used in LightRAG implementation)
-            domain: The domain of the knowledge ("tech" or "business") (not used in LightRAG implementation)
+            name: (Unused in LightRAG API)
+            domain: (Unused in LightRAG API, always "scientific_paper")
 
         Returns:
             InsertResponse object indicating success or failure
         """
         endpoint = f"{self.base_url}/documents/text"
-
-        # Prepare request payload
-        # Note: LightRAG doesn't support name and domain parameters, so we only use the text
         payload = InsertTextRequest(text=text).dict()
-
-        # Log domain information even though it's not used in the API call
         logger.debug(
-            f"Saving {domain} domain text to LightRAG knowledge graph: {text[:100]}..."
+            f"Saving scientific paper text to LightRAG knowledge graph: {text[:100]}..."
         )
-
         try:
             response = requests.post(endpoint, json=payload, headers=self.headers)
             response.raise_for_status()
-
             data = response.json()
             logger.debug(f"Received response: {data}")
-
             return InsertResponse(
                 status=data.get("status", "error"), message=data.get("message", "")
             )
-
         except requests.exceptions.RequestException as e:
             error_msg = f"Error saving to LightRAG knowledge graph: {str(e)}"
             logger.error(error_msg)
@@ -198,30 +172,24 @@ class LightRAGKnowledgeGraph(BaseKnowledgeGraph):
         self,
         text: str,
         name: Optional[str] = None,
-        domain: Literal["tech", "business"] = "tech",
+        domain: Literal["scientific_paper"] = "scientific_paper",
     ) -> str:
         """
-        Async implementation of the save method.
+        Async implementation of the save method for scientific paper knowledge.
 
         Args:
             text: The text to save
-            name: Optional name for the episode (not used in LightRAG implementation)
-            domain: The domain of the knowledge ("tech" or "business") (not used in LightRAG implementation)
+            name: (Unused in LightRAG API)
+            domain: (Unused in LightRAG API, always "scientific_paper")
 
         Returns:
-            The ID of the saved episode
+            The ID of the saved episode or a status message
         """
         endpoint = f"{self.base_url}/documents/text"
-
-        # Prepare request payload
-        # Note: LightRAG doesn't support name and domain parameters, so we only use the text
         payload = InsertTextRequest(text=text).dict()
-
-        # Log domain information even though it's not used in the API call
         logger.debug(
-            f"Async saving {domain} domain text to LightRAG knowledge graph: {text[:100]}..."
+            f"Async saving scientific paper text to LightRAG knowledge graph: {text[:100]}..."
         )
-
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
@@ -229,12 +197,8 @@ class LightRAGKnowledgeGraph(BaseKnowledgeGraph):
                 ) as response:
                     response.raise_for_status()
                     data = await response.json()
-
             logger.debug(f"Received async response: {data}")
-
-            # Return document ID or a status message
             return data.get("id", str(data.get("status", "success")))
-
         except (aiohttp.ClientError, ValueError) as e:
             error_msg = f"Error async saving to LightRAG knowledge graph: {str(e)}"
             logger.error(error_msg)

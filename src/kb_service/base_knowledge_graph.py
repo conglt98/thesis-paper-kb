@@ -1,11 +1,11 @@
 """
-Base Knowledge Graph interface for the AI-Powered Knowledge Base System.
+Base Knowledge Graph interface for Scientific Paper Knowledge Base System.
 
-This module defines the abstract base class that all knowledge graph implementations must follow.
+This module defines the abstract base class that all scientific paper knowledge graph implementations must follow.
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional, Literal
+from typing import Optional
 
 from src.core.models import (
     QueryResponse,
@@ -15,16 +15,16 @@ from src.core.models import (
 
 class BaseKnowledgeGraph(ABC):
     """
-    Abstract base class for knowledge graph implementations.
+    Abstract base class for scientific paper knowledge graph implementations.
 
-    This class defines the interface that all knowledge graph backends must implement,
+    This class defines the interface that all scientific paper knowledge graph backends must implement,
     ensuring a consistent API regardless of the underlying technology.
     """
 
     @abstractmethod
     def query(self, query_text: str, mode: str = "local", **kwargs) -> QueryResponse:
         """
-        Query the knowledge graph with the given text.
+        Query the knowledge graph for scientific papers with the given text.
 
         Args:
             query_text: The query text
@@ -39,7 +39,7 @@ class BaseKnowledgeGraph(ABC):
     @abstractmethod
     async def async_query(self, query_text: str, mode: str = "local", **kwargs) -> str:
         """
-        Async implementation of the query method.
+        Async implementation of the query method for scientific papers.
 
         Args:
             query_text: The query text
@@ -53,15 +53,15 @@ class BaseKnowledgeGraph(ABC):
 
     @abstractmethod
     def save(
-        self, text: str, name: Optional[str] = None, domain: str = "tech"
+        self, text: str, paper_title: Optional[str] = None, doi: str = ""
     ) -> InsertResponse:
         """
-        Save the given text to the knowledge graph.
+        Save the given scientific paper text to the knowledge graph.
 
         Args:
             text: The text to save
-            name: Optional name for the episode
-            domain: The domain of the knowledge ("tech" or "business")
+            paper_title: Optional title of the scientific paper
+            doi: The DOI of the paper (optional)
 
         Returns:
             InsertResponse object indicating success or failure
@@ -72,18 +72,18 @@ class BaseKnowledgeGraph(ABC):
     async def async_save(
         self,
         text: str,
-        name: Optional[str] = None,
-        domain: Literal["tech", "business"] = "tech",
+        paper_title: Optional[str] = None,
+        doi: str = "",
     ) -> str:
         """
-        Async implementation of the save method.
+        Async implementation of the save method for scientific papers.
 
         Args:
             text: The text to save
-            name: Optional name for the episode
-            domain: The domain of the knowledge ("tech" or "business")
+            paper_title: Optional title of the scientific paper
+            doi: The DOI of the paper (optional)
 
         Returns:
-            The ID of the saved episode
+            The ID of the saved paper or operation result
         """
         pass

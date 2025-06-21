@@ -9,9 +9,13 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent.parent.absolute()
 INPUTS_DIR = os.path.join(PROJECT_ROOT, "inputs")
 CACHE_DIR = os.path.join(PROJECT_ROOT, ".cache")
+DOWNLOADS_DIR = os.path.join(
+    PROJECT_ROOT, "downloads"
+)  # Directory for all downloaded files
 
-# Ensure cache directory exists
+# Ensure cache and downloads directories exist
 Path(CACHE_DIR).mkdir(exist_ok=True, parents=True)
+Path(DOWNLOADS_DIR).mkdir(exist_ok=True, parents=True)
 
 # Knowledge Graph Backend Configuration
 # Options: "light_rag" or "graphiti"

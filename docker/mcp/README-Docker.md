@@ -1,6 +1,6 @@
-# Docker Setup for Central Knowledge Base FastMCP Server
+# Docker Setup for Scientific Paper Knowledge Base FastMCP Server
 
-This document provides instructions for building and running the Central Knowledge Base FastMCP server using Docker.
+This document provides instructions for building and running the Scientific Paper Knowledge Base FastMCP server using Docker.
 
 ## ⚡ Optimized Build Commands (Recommended)
 
@@ -54,7 +54,7 @@ docker run -i --rm --name fastmcp-server -p 8000:8000 \
   -e URL_AGENT="http://0.0.0.0:8000" \
   -e USER_ID="u_123" \
   -e SESSION_ID="s_123" \
-  -e AGENT_APPS="technical_agent" \
+  -e AGENT_APPS="scientific_paper_knowledge_base_agent" \
   central-knowledge-base
 ```
 
@@ -211,7 +211,7 @@ docker run -i --rm --name fastmcp-server -p 8000:8000 \
   -e URL_AGENT="http://host.docker.internal:8000" \
   -e USER_ID="u_123" \
   -e SESSION_ID="s_123" \
-  -e AGENT_APPS="technical_agent" \
+  -e AGENT_APPS="scientific_paper_knowledge_base_agent" \
   central-knowledge-base
 
 # For Linux systems using host network
@@ -219,7 +219,7 @@ docker run -i --rm --name fastmcp-server --network host \
   -e URL_AGENT="http://localhost:8000" \
   -e USER_ID="u_123" \
   -e SESSION_ID="s_123" \
-  -e AGENT_APPS="technical_agent" \
+  -e AGENT_APPS="scientific_paper_knowledge_base_agent" \
   central-knowledge-base
 
 # For remote agent server
@@ -227,7 +227,7 @@ docker run -i --rm --name fastmcp-server -p 8000:8000 \
   -e URL_AGENT="http://192.168.1.100:8000" \
   -e USER_ID="u_123" \
   -e SESSION_ID="s_123" \
-  -e AGENT_APPS="technical_agent" \
+  -e AGENT_APPS="scientific_paper_knowledge_base_agent" \
   central-knowledge-base
 ```
 
@@ -238,7 +238,7 @@ Agent interaction environment variables:
   - Use specific IP for remote agent servers
 - `USER_ID`: User identifier for agent sessions (default: `u_123`)
 - `SESSION_ID`: Session identifier for agent conversations (default: `s_123`)
-- `AGENT_APPS`: Agent application name to interact with (default: `technical_agent`)
+- `AGENT_APPS`: Agent application name to interact with (default: `scientific_paper_knowledge_base_agent`)
 
 ## Development Mode
 
@@ -388,10 +388,4 @@ docker-compose up -e URL_AGENT="http://host.docker.internal:9000" fastmcp-server
 
 2. **For Linux users**:
    - Use the `fastmcp-server-host-network` service
-   - Or set `URL_AGENT` to your machine's IP address
-
-3. **Test connectivity**:
-   ```bash
-   # Check if agent server is accessible from container
-   docker exec -it <container-name> curl http://host.docker.internal:8000/health
-   ```
+   - Or set `URL_AGENT`

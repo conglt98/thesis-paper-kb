@@ -2,36 +2,78 @@
 Data models for the AI-Powered Knowledge Base System.
 """
 
-from typing import Dict, List, Optional
-from pydantic import BaseModel, Field
+import os
+from typing import Dict, List, Optional, Callable
+from typing import Literal
+from pydantic import BaseModel, Field, PrivateAttr
 
 
 class QueryRequest(BaseModel):
     """
-    Model for knowledge base query requests.
+    Model for knowledge base query requests, including advanced configuration parameters for LightRAG.
     """
 
     query: str = Field(..., description="The query text")
-    mode: str = Field(
-        "hybrid", description="Query mode (local, global, hybrid, naive, mix, bypass)"
+    mode: Literal["local", "global", "hybrid", "naive", "mix", "bypass"] = Field(
+        "hybrid",
+        description="Specifies the retrieval mode: 'local', 'global', 'hybrid', 'naive', 'mix', 'bypass'.",
     )
-    only_need_context: Optional[bool] = Field(
-        None,
-        description="If True, only returns the retrieved context without generating a response",
+    """Specifies the retrieval mode:
+    - "local": Focuses on context-dependent information.
+    - "global": Utilizes global knowledge.
+    - "hybrid": Combines local and global retrieval methods.
+    - "naive": Performs a basic search without advanced techniques.
+    - "mix": Integrates knowledge graph and vector retrieval.
+    """
+    
+    only_need_context: bool = Field(
+        False,
+        description="If True, only returns the retrieved context without generating a response.",
     )
-    only_need_prompt: Optional[bool] = Field(
-        None,
-        description="If True, only returns the generated prompt without producing a response",
+    only_need_prompt: bool = Field(
+        False,
+        description="If True, only returns the generated prompt without producing a response.",
     )
-    response_type: Optional[str] = Field(
-        None,
-        description="Defines the response format (e.g., 'Multiple Paragraphs', 'Single Paragraph', 'Bullet Points')",
+    response_type: str = Field(
+        "Multiple Paragraphs",
+        description="Defines the response format. Examples: 'Multiple Paragraphs', 'Single Paragraph', 'Bullet Points'.",
     )
-    top_k: Optional[int] = Field(None, description="Number of top items to retrieve")
+    stream: bool = Field(
+        False, description="If True, enables streaming output for real-time responses."
+    )
+    top_k: int = Field(
+        default_factory=lambda: int(os.getenv("TOP_K", "60")),
+        description="Number of top items to retrieve. Represents entities in 'local' mode and relationships in 'global' mode.",
+    )
+    max_token_for_text_unit: int = Field(
+        default_factory=lambda: int(os.getenv("MAX_TOKEN_TEXT_CHUNK", "4000")),
+        description="Maximum number of tokens allowed for each retrieved text chunk.",
+    )
+    max_token_for_global_context: int = Field(
+        default_factory=lambda: int(os.getenv("MAX_TOKEN_RELATION_DESC", "4000")),
+        description="Maximum number of tokens allocated for relationship descriptions in global retrieval.",
+    )
+    max_token_for_local_context: int = Field(
+        default_factory=lambda: int(os.getenv("MAX_TOKEN_ENTITY_DESC", "4000")),
+        description="Maximum number of tokens allocated for entity descriptions in local retrieval.",
+    )
     conversation_history: Optional[List[Dict[str, str]]] = Field(
-        None,
-        description="Previous conversation turns in the format [{'role': 'user/assistant', 'content': 'message'}]",
+        default_factory=list,
+        description='Stores past conversation history to maintain context. Format: [{"role": "user/assistant", "content": "message"}].',
     )
+    history_turns: int = Field(
+        3,
+        description="Number of complete conversation turns (user-assistant pairs) to consider in the response context.",
+    )
+    ids: Optional[List[str]] = Field(
+        None, description="List of ids to filter the results."
+    )
+    user_prompt: Optional[str] = Field(
+        None,
+        description="User-provided prompt for the query. If provided, this will be used instead of the default value from prompt template.",
+    )
+    # model_func is not serializable, so we use a private attribute
+    _model_func: Optional[Callable[..., object]] = PrivateAttr(default=None)
 
 
 class QueryResponse(BaseModel):
@@ -67,34 +109,30 @@ class InsertResponse(BaseModel):
     )
 
 
-class FeatureUpdateRequest(BaseModel):
+class ScientificPaper(BaseModel):
     """
-    Model for feature update requests.
-    """
-
-    feature_name: str = Field(
-        ..., description="The name of the feature to add or update"
-    )
-    feature_description: str = Field(..., description="The description of the feature")
-    parent_node: Optional[str] = Field(
-        None, description="The parent node ID in the mermaid diagram"
-    )
-
-
-class FeatureUpdateResponse(BaseModel):
-    """
-    Model for feature update responses.
+    Model representing a scientific paper.
     """
 
-    status: str = Field(
-        ..., description="Status of the update operation (success, error)"
+    title: str = Field(..., description="Title of the scientific paper")
+    doi: Optional[str] = Field(None, description="DOI of the paper")
+    authors: Optional[list] = Field(None, description="List of authors")
+    abstract: Optional[str] = Field(None, description="Abstract of the paper")
+    keywords: Optional[list] = Field(None, description="Keywords")
+    publication_year: Optional[int] = Field(None, description="Year of publication")
+    journal_or_conference: Optional[str] = Field(
+        None, description="Journal or conference name"
     )
-    message: Optional[str] = Field(
-        None, description="Additional details about the operation"
-    )
-    updated_diagram: Optional[str] = Field(
-        None, description="The updated mermaid diagram"
-    )
+    sections: Optional[list] = Field(None, description="Sections of the paper")
+    references: Optional[list] = Field(None, description="References")
 
 
-# Custom Entity Models for Graphiti
+class Author(BaseModel):
+    name: str = Field(..., description="Author's name")
+    affiliation: Optional[str] = Field(None, description="Affiliation of the author")
+    email: Optional[str] = Field(None, description="Email address")
+
+
+class Affiliation(BaseModel):
+    name: str = Field(..., description="Affiliation name")
+    address: Optional[str] = Field(None, description="Affiliation address")

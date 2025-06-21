@@ -31,24 +31,15 @@ from src.core.models import (
 )
 from src.kb_service.base_knowledge_graph import BaseKnowledgeGraph
 from src.kb_service.entities import (
-    # Business entities
-    CoreProduct,
-    ProductComponent,
-    ProductFeature,
-    Actor,
-    UserStory,
-    UserGuide,
-    BusinessProcess,
-    BusinessEvent,
-    BusinessObject,
-    # Technical entities
-    Service,
-    DataStore,
-    CodeModule,
-    DataTable,
-    TechStack,
-    ServiceType,
-    DataStoreType,
+    ScientificPaper,
+    Author,
+    Affiliation,
+    PaperSection,
+    Citation,
+    Reference,
+    Keyword,
+    ResearchField,
+    ConferenceOrJournal,
 )
 
 # Import Graphiti
@@ -77,7 +68,7 @@ from graphiti_core.search.search_config_recipes import (
 
 class GraphitiKnowledgeGraph(BaseKnowledgeGraph):
     """
-    Graphiti Knowledge Graph implementation for interacting with the Graphiti API.
+    Graphiti Knowledge Graph implementation for interacting with the Graphiti API, focused on scientific paper knowledge base.
     """
 
     def __init__(
@@ -348,11 +339,80 @@ class GraphitiKnowledgeGraph(BaseKnowledgeGraph):
 
         return "\n\n".join(response_parts)
 
+    async def async_save(
+        self,
+        text: str,
+        name: str | None = None,
+        domain: Literal["scientific_paper"] = "scientific_paper",
+    ) -> str:
+        """
+        Async implementation of the save method. Routes to the appropriate domain-specific
+        save method based on the domain parameter.
+
+        Args:
+            text: The text to save
+            name: Optional name for the episode
+            domain: The domain of the knowledge ("scientific_paper")
+
+        Returns:
+            The ID of the saved episode
+        """
+        # Route to the scientific paper save method
+        return await self.save_scientific_paper(text, name)
+
+    async def save_scientific_paper(self, text: str, name: str | None = None) -> str:
+        """
+        Save scientific paper knowledge to the graph. This method handles scientific paper entities.
+
+        Args:
+            text: The text containing scientific paper knowledge to save
+            name: Optional name for the episode
+
+        Returns:
+            The ID of the saved episode
+        """
+        await self._ensure_initialized()
+        episode_name = (
+            name or f"scientific_paper_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        )
+
+        logger.info(
+            f"Adding episode to Graphiti with scientific paper entity types: {ScientificPaper}"
+        )
+
+        if self.graphiti and self.initialized:
+            result = await self.graphiti.add_episode(
+                name=episode_name,
+                episode_body=text,
+                source=EpisodeType.text,
+                source_description="Scientific Paper Knowledge Entry",
+                reference_time=datetime.now(),
+                entity_types={
+                    "ScientificPaper": ScientificPaper,
+                    "Author": Author,
+                    "Affiliation": Affiliation,
+                    "PaperSection": PaperSection,
+                    "Citation": Citation,
+                    "Reference": Reference,
+                    "Keyword": Keyword,
+                    "ResearchField": ResearchField,
+                    "ConferenceOrJournal": ConferenceOrJournal,
+                },
+            )
+            logger.info(
+                f"Added scientific paper episode to Graphiti with custom entity types: {episode_name}"
+            )
+            return episode_name
+        else:
+            error_msg = "Graphiti client not initialized"
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
+
     def save(
         self,
         text: str,
         name: str | None = None,
-        domain: Literal["tech", "business"] = "tech",
+        domain: Literal["scientific_paper"] = "scientific_paper",
     ) -> InsertResponse:
         """
         Save the given text to the knowledge graph.
@@ -381,135 +441,3 @@ class GraphitiKnowledgeGraph(BaseKnowledgeGraph):
             error_msg = f"Error saving to Graphiti knowledge graph: {str(e)}"
             logger.error(error_msg)
             return InsertResponse(status="error", message=error_msg)
-
-    async def async_save(
-        self,
-        text: str,
-        name: str | None = None,
-        domain: Literal["tech", "business"] = "tech",
-    ) -> str:
-        """
-        Async implementation of the save method. Routes to the appropriate domain-specific
-        save method based on the domain parameter.
-
-        Args:
-            text: The text to save
-            name: Optional name for the episode
-            domain: The domain of the knowledge ("tech" or "business")
-
-        Returns:
-            The ID of the saved episode
-        """
-        # Route to the appropriate domain-specific save method
-        if domain == "business":
-            return await self.save_business(text, name)
-        else:  # Default to tech domain
-            return await self.save_technical(text, name)
-
-    async def save_technical(self, text: str, name: str | None = None) -> str:
-        """
-        Save technical knowledge to the graph. This method handles technical entities like
-        Service, DataStore, CodeModule, DataTable, and TechStack.
-
-        Args:
-            text: The text containing technical knowledge to save
-            name: Optional name for the episode
-
-        Returns:
-            The ID of the saved episode
-        """
-        await self._ensure_initialized()
-        # logger.info(f"Saving technical knowledge to Graphiti: {text}")
-
-        # Generate a unique name based on timestamp if not provided
-        episode_name = name or f"tech_kb_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-
-        # Define technical entity types for extraction
-        technical_entity_types = {
-            "Service": Service,
-            "DataStore": DataStore,
-            "CodeModule": CodeModule,
-            "DataTable": DataTable,
-            "TechStack": TechStack,
-            "ServiceType": ServiceType,
-            "DataStoreType": DataStoreType,
-        }
-
-        logger.info(
-            f"Adding episode to Graphiti with technical entity types: {technical_entity_types}"
-        )
-
-        # Add the episode to the graph with technical domain metadata and entity types
-        if self.graphiti and self.initialized:
-            result = await self.graphiti.add_episode(
-                name=episode_name,
-                episode_body=text,
-                source=EpisodeType.text,
-                source_description="Technical Knowledge Entry",
-                reference_time=datetime.now(),
-                entity_types=technical_entity_types,
-            )
-
-            logger.info(
-                f"Added technical episode to Graphiti with custom entity types: {episode_name}"
-            )
-            return episode_name
-        else:
-            error_msg = "Graphiti client not initialized"
-            logger.error(error_msg)
-            raise RuntimeError(error_msg)
-
-    async def save_business(self, text: str, name: str | None = None) -> str:
-        """
-        Save business knowledge to the graph. This method handles business entities like
-        CoreProduct, Feature, Actor, UserStory, and UserGuide.
-
-        Args:
-            text: The text containing business knowledge to save
-            name: Optional name for the episode
-
-        Returns:
-            The ID of the saved episode
-        """
-        await self._ensure_initialized()
-        # logger.info(f"Saving business knowledge to Graphiti: {text}")
-
-        # Generate a unique name based on timestamp if not provided
-        episode_name = name or f"business_kb_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-
-        # Define business entity types for extraction
-        business_entity_types = {
-            "Product": CoreProduct,
-            "ProductFeatureGroup": ProductComponent,
-            "ProductFeature": ProductFeature,
-            "Actor": Actor,
-            "BusinessContext": UserStory,
-            "UserGuide": UserGuide,
-            "BusinessProcess": BusinessProcess,
-            "BusinessEvent": BusinessEvent,
-            "BusinessObject": BusinessObject,
-        }
-
-        logger.info(
-            f"Adding episode to Graphiti with business entity types: {business_entity_types}"
-        )
-
-        # Add the episode to the graph with business domain metadata and entity types
-        if self.graphiti and self.initialized:
-            result = await self.graphiti.add_episode(
-                name=episode_name,
-                episode_body=text,
-                source=EpisodeType.text,
-                source_description="Business Knowledge Entry",
-                reference_time=datetime.now(),
-                entity_types=business_entity_types,
-            )
-
-            logger.info(
-                f"Added business episode to Graphiti with custom entity types: {episode_name}"
-            )
-            return episode_name
-        else:
-            error_msg = "Graphiti client not initialized"
-            logger.error(error_msg)
-            raise RuntimeError(error_msg)

@@ -18,9 +18,9 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Default values
-IMAGE_NAME="central-knowledge-base"
+IMAGE_NAME="sci-paper-kb-mcp"
 TAG="latest"
-CONTAINER_NAME="fastmcp-server"
+CONTAINER_NAME="sci-paper-kb-mcp"
 PORT="8000"
 DOCKERFILE_PATH="docker/mcp/Dockerfile"
 NETWORK_MODE=""
@@ -57,7 +57,7 @@ show_usage() {
     echo "Options:"
     echo "  -p, --port PORT     Port to expose (default: 8000)"
     echo "  -t, --tag TAG       Docker image tag (default: latest)"
-    echo "  -n, --name NAME     Container name (default: fastmcp-server)"
+    echo "  -n, --name NAME     Container name (default: sci-paper-kb-mcp)"
     echo "  --agent-url URL     Custom agent server URL (e.g., http://192.168.1.100:8000)"
     echo "  -h, --help          Show this help message"
     echo ""

@@ -2,35 +2,25 @@ import os
 import requests
 from fastmcp import FastMCP
 
-mcp = FastMCP("My MCP Server")
+mcp = FastMCP("Scientific Paper MCP Server")
 
 # Environment variables for agent configuration
 URL_AGENT = os.getenv("URL_AGENT", "http://0.0.0.0:8000")
 USER_ID = os.getenv("USER_ID", "u_123")
 SESSION_ID = os.getenv("SESSION_ID", "s_123")
-AGENT_APPS = os.getenv("AGENT_APPS", "technical_agent")
+AGENT_APPS = os.getenv("AGENT_APPS", "scientific_paper_knowledge_base_agent")
 
 
 @mcp.tool()
-def greet(name: str) -> str:
-    return f"Hello, {name}!"
-
-
-@mcp.tool()
-def bye(name: str) -> str:
-    return f"Bye, {name}!"
-
-
-@mcp.tool()
-def knowledge_base_agent(text: str) -> str:
+def scientific_paper_query(query: str) -> str:
     """
-    Send a text message to the deployed agent and return the response.
+    Query and synthesize information about scientific papers from the knowledge base agent.
 
     Args:
-        text: The user's text message to send to the agent
+        query: The user's question or information need about scientific papers
 
     Returns:
-        The agent's response or error message
+        The agent's response with relevant scientific paper information, or an error message
     """
     try:
         # Step 1: Check/create session
@@ -46,13 +36,13 @@ def knowledge_base_agent(text: str) -> str:
             f"Session response: {session_response.status_code} - {session_response.text}"
         )
 
-        # Step 2: Send message to agent
+        # Step 2: Send query to agent
         run_url = f"{URL_AGENT}/run"
         payload = {
             "app_name": AGENT_APPS,
             "user_id": USER_ID,
             "session_id": SESSION_ID,
-            "new_message": {"role": "user", "parts": [{"text": text}]},
+            "new_message": {"role": "user", "parts": [{"text": query}]},
         }
 
         headers = {"Content-Type": "application/json"}
@@ -62,9 +52,7 @@ def knowledge_base_agent(text: str) -> str:
         if run_response.status_code == 200:
             return run_response.text
         else:
-            return (
-                f"Error calling agent: {run_response.status_code} - {run_response.text}"
-            )
+            return f"Error calling scientific paper agent: {run_response.status_code} - {run_response.text}"
 
     except requests.exceptions.RequestException as e:
         return f"Network error: {str(e)}"

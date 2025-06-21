@@ -1,7 +1,7 @@
 import os
 from typing import Optional, Tuple
 from contextlib import AsyncExitStack
-
+from src.core.config import DOWNLOADS_DIR
 from google.adk.agents import Agent
 from google.adk.models.lite_llm import LiteLlm
 from google.adk.tools import FunctionTool
@@ -12,7 +12,7 @@ from src.core.logger import logger
 
 async def query_knowledge_base_tools(query: str):
     """
-    Query the knowledge base for the given query.
+    Query the scientific paper knowledge base (LightRAG backend) for the given query.
 
     Args:
         query: The query to search the knowledge base for
@@ -20,13 +20,12 @@ async def query_knowledge_base_tools(query: str):
     Returns:
         The response from the knowledge base
     """
-    os.environ["KNOWLEDGE_GRAPH_BACKEND"] = "graphiti"
+    os.environ["KNOWLEDGE_GRAPH_BACKEND"] = "light_rag"
     kb_service = KnowledgeGraphModule()
 
-    logger.info(f"Querying Knowledge Base Service with Graphiti backend...")
+    logger.info(f"Querying Knowledge Base Service with LightRAG backend...")
     response = await kb_service.async_query(query)
     logger.info(f"Query response: {response}")
-
     return response
 
 
@@ -107,4 +106,33 @@ async def atlassian_mcp_tools():
         return tools, exit_stack
     except Exception as e:
         logger.warning(f"Failed to connect to MCP Atlassian server: {e}")
+        return [], None
+
+
+async def paper_search_mcp_tools():
+    """
+    Initialize MCP tools for Paper Search integration.
+
+    This function starts the MCP Paper Search server using the uvicorn runner and initializes the toolset for use by the agent.
+
+    Returns:
+        Tuple of (list of MCP tools, exit stack) or ([], None) if initialization fails
+    """
+    try:
+        # Use the project root as the working directory so imports and file paths resolve correctly
+        server_params = StdioServerParameters(
+            command="uv",
+            args=[
+                "run",
+                "-m",
+                "paper_search_mcp.server",
+            ],
+        )
+        tools, exit_stack = await MCPToolset.from_server(
+            connection_params=server_params
+        )
+        logger.info("MCP Paper Search Toolset created successfully.")
+        return tools, exit_stack
+    except Exception as e:
+        logger.warning(f"Failed to connect to MCP Paper Search server: {e}")
         return [], None

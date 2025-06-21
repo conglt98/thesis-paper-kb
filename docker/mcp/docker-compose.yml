@@ -1,10 +1,12 @@
 version: '3.8'
 
 services:
-  fastmcp-server:
+  sci-paper-kb-mcp:
+    container_name: sci-paper-kb-mcp
     build:
       context: ../../
       dockerfile: docker/mcp/Dockerfile
+    image: sci-paper-kb-mcp:latest
     ports:
       - "8000:8000"
     environment:
@@ -14,45 +16,52 @@ services:
       - URL_AGENT=${URL_AGENT:-http://host.docker.internal:8000}
       - USER_ID=${USER_ID:-u_123}
       - SESSION_ID=${SESSION_ID:-s_123}
-      - AGENT_APPS=${AGENT_APPS:-technical_agent}
+      - AGENT_APPS=${AGENT_APPS:-scientific_paper_knowledge_base_agent}
     volumes:
-      # Mount source code for development (optional)
+      # Mount source code for development (read-only for safety)
       - ../../src:/app/src:ro
     command: ["uv", "run", "fastmcp", "run", "src/mcp/greetings.py:mcp"]
 
-  # Alternative service for different transport modes
-  fastmcp-server-http:
+  # HTTP transport service for web clients
+  sci-paper-kb-mcp-http:
+    container_name: sci-paper-kb-mcp-http
     build:
       context: ../../
       dockerfile: docker/mcp/Dockerfile
+    image: sci-paper-kb-mcp:latest
     ports:
       - "8001:8001"
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
-      # Agent interaction configuration - use host.docker.internal to reach host machine
       - URL_AGENT=${URL_AGENT:-http://host.docker.internal:8000}
       - USER_ID=${USER_ID:-u_123}
       - SESSION_ID=${SESSION_ID:-s_123}
-      - AGENT_APPS=${AGENT_APPS:-technical_agent}
+      - AGENT_APPS=${AGENT_APPS:-scientific_paper_knowledge_base_agent}
     volumes:
       - ../../src:/app/src:ro
     command: ["uv", "run", "fastmcp", "run", "src/mcp/greetings.py:mcp", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8001"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Alternative for Linux systems using host network
-  fastmcp-server-host-network:
+  # Host network for Linux systems
+  sci-paper-kb-mcp-host-network:
+    container_name: sci-paper-kb-mcp-host-network
     build:
       context: ../../
       dockerfile: docker/mcp/Dockerfile
+    image: sci-paper-kb-mcp:latest
     network_mode: host
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
-      # Agent interaction configuration - can use localhost when using host network
       - URL_AGENT=${URL_AGENT:-http://localhost:8000}
       - USER_ID=${USER_ID:-u_123}
       - SESSION_ID=${SESSION_ID:-s_123}
-      - AGENT_APPS=${AGENT_APPS:-technical_agent}
+      - AGENT_APPS=${AGENT_APPS:-scientific_paper_knowledge_base_agent}
     volumes:
       - ../../src:/app/src:ro
     command: ["uv", "run", "fastmcp", "run", "src/mcp/greetings.py:mcp"]
