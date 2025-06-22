@@ -19,7 +19,7 @@ Path(DOWNLOADS_DIR).mkdir(exist_ok=True, parents=True)
 
 # Knowledge Graph Backend Configuration
 # Options: "light_rag" or "graphiti"
-KNOWLEDGE_GRAPH_BACKEND = os.getenv("KNOWLEDGE_GRAPH_BACKEND", "graphiti")
+KNOWLEDGE_GRAPH_BACKEND = os.getenv("KNOWLEDGE_GRAPH_BACKEND", "light_rag")
 
 # LightRAG Server Configuration
 # Construct the URL from HOST and PORT environment variables
