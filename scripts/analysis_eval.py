@@ -41,8 +41,10 @@ def extract_scores(items: List) -> pd.DataFrame:
 
 df = extract_scores(items)
 
-# Set style
-sns.set(style="whitegrid", font_scale=1.1)
+# Output DataFrame to CSV
+csv_path = os.path.join(CHARTS_DIR, "eval_results.csv")
+df.to_csv(csv_path, index=False)
+print(f"Eval results saved to CSV: {csv_path}")
 
 # List of basic criteria (exclude average_score)
 basic_criteria = [
@@ -55,6 +57,15 @@ basic_criteria = [
     "references",
     "summary_takeaway",
 ]
+
+# Calculate mean for each criterion by system and output to CSV
+mean_df = df.groupby("system")[basic_criteria + ["average_score"]].mean().reset_index()
+mean_csv_path = os.path.join(CHARTS_DIR, "eval_results_mean.csv")
+mean_df.to_csv(mean_csv_path, index=False)
+print(f"Mean eval results (per system) saved to CSV: {mean_csv_path}")
+
+# Set style
+sns.set(style="whitegrid", font_scale=1.1)
 
 # --- Grouped bar chart for all basic criteria ---
 df_melt = df.melt(
@@ -110,7 +121,7 @@ plt.savefig(os.path.join(CHARTS_DIR, "average_score_barplot.png"))
 plt.close()
 
 # Boxplot for average score distribution
-plt.figure(figsize=(7, 5))
+plt.figure(figsize=(5, 5))
 sns.boxplot(
     data=df,
     x="system",
