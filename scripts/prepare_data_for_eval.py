@@ -14,7 +14,7 @@ from src.core.logger import logger
 
 # ---- Dummy functions (replace with your real logic or API calls) ---- #
 async def baseline_system(graph: KnowledgeGraphModule, question: str) -> str:
-    response = graph.query(question, mode="naive", **{"top_k": 30})
+    response = graph.query(question, mode="hybrid", **{"top_k": 40})
     return response.response
 
 async def proposed_system(runner: Runner, user_id: str, session_id: str, question: str) -> str:
